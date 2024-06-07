@@ -1,7 +1,6 @@
 const { Schema, model } = require("mongoose");
 const bcrypt = require("bcrypt");
-const { artworkSchema } = require("./Artwork");
-const Order = require("./Order");
+
 
 // Define the schema for User
 const userSchema = new Schema({
