@@ -1,10 +1,7 @@
-import React from "react";
-import {useEffect} from React
-
-const homepage = () => {
-    const helloWorld = "hello world"
-    return helloWorld
-
-   
+function About() {
+  return (
+    <section>Just do it ! </section>
+  );
 }
-export default homepage
+
+export default About;
