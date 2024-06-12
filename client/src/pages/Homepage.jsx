@@ -1,6 +1,6 @@
 function About() {
   return (
-    <section>Just do it ! </section>
+    <section>Social media application... test n1</section>
   );
 }
 

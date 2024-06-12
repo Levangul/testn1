@@ -4,21 +4,40 @@ type User {
     username: String
     email: String
     password: String
+    posts: [Post]
 
+}
+type Post {
+  id: ID 
+  text: String
+  date: String
+  author: User
+  comments: [Comment]
+}
+type Comment {
+  id: ID
+  text: String
+  date: String
+  author: User!
+  post: Post
 }
 type Auth {
     token: ID!
     user: User
   }
 
-type Query {
-    users: [User]
-    user(username: String!): User
+  type Query {
+  users: [User]
+  user(username: String!): User
+  posts: [Post]
+  post(id: ID!): Post
+  comments(postId: ID!): [Comment]
 }
 type Mutation {
   addUser(username: String!, email: String!, password: String!): Auth
   login(email: String!, password: String!): Auth
- 
+  addPost(text: String!): Post
+  addComment(postId: ID!, text: String!): Comment
 }
 `
 module.exports = typeDefs
