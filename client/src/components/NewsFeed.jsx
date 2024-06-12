@@ -1,9 +1,9 @@
-const NewsFeed = ({ username, email, bio }) => {
+const NewsFeed = ({ username, email, text }) => {
   return (
-    <div className="profile-card">
+    <div className="NewsFeed">
       <h2>{username}</h2>
       <p>{email}</p>
-      <p>{bio}</p>
+      <p>{text}</p>
     </div>
   );
 };
