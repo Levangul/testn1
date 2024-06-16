@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useMutation, gql } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { LOGIN_USER } from "../utils/mutations";
-
-
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [login, { data, loading, error }] = useMutation(LOGIN_USER);
+  const [loginMutation, { loading, error }] = useMutation(LOGIN_USER);
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,8 +16,9 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await login({ variables: { ...formData } });
+      const { data } = await loginMutation({ variables: { ...formData } });
       localStorage.setItem("id_token", data.login.token);
+      login(data.login.token);
       console.log("Login successful:", data);
     } catch (err) {
       console.error("Error logging in:", err);
