@@ -18,7 +18,7 @@ type Comment {
   id: ID
   text: String
   date: String
-  author: User!
+  author: User
   post: Post
 }
 type Auth {

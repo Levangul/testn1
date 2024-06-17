@@ -1,22 +1,26 @@
 const { Schema, model } = require('mongoose');
 
 const postSchema = new Schema({
-  postText: {
+  text: {
     type: String,
-    required: 'This section can not be empty!',
+    required: 'This section cannot be empty!',
     minlength: 1,
     maxlength: 280,
     trim: true,
   },
-  postAuthor: {
+  author: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
-  createdAt: {
+  date: {
     type: Date,
     default: Date.now,
   },
+  comments: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment',
+  }]
 });
 
 const Post = model('Post', postSchema);

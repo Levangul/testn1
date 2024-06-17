@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation } from '@apollo/client';
-import { SIGNUP_USER } from '../utils/mutations'; // Adjust the path as needed
+import { SIGNUP_USER } from '../utils/mutations';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Signup = () => {
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
-  const [signup, { data, loading, error }] = useMutation(SIGNUP_USER);
+  const [signup, { loading, error }] = useMutation(SIGNUP_USER);
+  const navigate = useNavigate();
+  const { login, isAuthenticated  } = useAuth(); // Access the login function from the auth context
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/"); // Redirect if user is already logged in
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,7 +25,9 @@ const Signup = () => {
     try {
       const { data } = await signup({ variables: { ...formData } });
       localStorage.setItem('id_token', data.addUser.token);
+      login(data.addUser.token); // Authenticate the user
       console.log('Signup successful:', data);
+      navigate('/'); // Redirect to the homepage
     } catch (err) {
       console.error('Error signing up:', err);
     }

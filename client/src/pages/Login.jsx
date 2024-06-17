@@ -1,12 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation } from "@apollo/client";
 import { LOGIN_USER } from "../utils/mutations";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loginMutation, { loading, error }] = useMutation(LOGIN_USER);
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate(); // Create a history object
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/"); // Redirect if user is already logged in
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,6 +28,7 @@ const Login = () => {
       localStorage.setItem("id_token", data.login.token);
       login(data.login.token);
       console.log("Login successful:", data);
+      navigate("/"); // Redirect to the homepage
     } catch (err) {
       console.error("Error logging in:", err);
     }

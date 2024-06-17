@@ -9,7 +9,7 @@ const resolvers = {
     Query: {
         users: async () => await User.find({}),
         user: async (_, { username }) => await User.findOne({ username }),
-        posts: async () => await Post.find({}),
+        posts: async () => await Post.find({}).sort({ date: -1 }), // Sort posts by date in descending order
         post: async (_, { id }) => await Post.findById(id),
         comments: async (_, { postId }) => await Comment.find({ post: postId }),
     },
@@ -50,38 +50,56 @@ const resolvers = {
         },
         addPost: async (_, { text }, { user }) => {
             if (!user) throw new AuthenticationError('You must be logged in to create a post');
+
             const newPost = new Post({
                 text,
                 author: user._id,
-                date: new Date().toISOString()
+                date: new Date().toISOString(),
             });
+
             await newPost.save();
-            user.posts.push(newPost);
-            await user.save();
+
+            const dbUser = await User.findById(user._id);
+            if (!dbUser.posts) {
+                dbUser.posts = [];
+            }
+            dbUser.posts.push(newPost._id);
+            await dbUser.save();
+
             return newPost;
         },
         addComment: async (_, { postId, text }, { user }) => {
             if (!user) throw new AuthenticationError('You must be logged in to comment');
+
             const post = await Post.findById(postId);
             if (!post) throw new Error('Post not found');
+
             const newComment = new Comment({
                 text,
                 author: user._id,
                 post: postId,
                 date: new Date().toISOString()
             });
+
             await newComment.save();
-            post.comments.push(newComment);
+
+            // Check if the comments array exists, if not initialize it
+            if (!post.comments) {
+                post.comments = [];
+            }
+
+            post.comments.push(newComment._id); // Push the comment ID instead of the entire comment object
             await post.save();
+
             return newComment;
-        }
+        },
     },
     User: {
-        posts: async (user) => await Post.find({ author: user._id })
+        posts: async (user) => await Post.find({ author: user._id }).sort({ date: -1 })
     },
     Post: {
         author: async (post) => await User.findById(post.author),
-        comments: async (post) => await Comment.find({ post: post._id })
+        comments: async (post) => await Comment.find({ post: post._id }).sort({ date: -1 })
     },
     Comment: {
         author: async (comment) => await User.findById(comment.author),
