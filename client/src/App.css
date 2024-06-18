@@ -21,6 +21,58 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+/* Navbar Links Styles */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-links {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar-links li {
+  margin: 0 1rem;
+}
+
+.navbar-links a,
+.navbar-links button {
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: white;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  display: inline-block;
+}
+
+.navbar-links a:hover,
+.navbar-links button:hover {
+  background-color: #f0f0f0;
+  color: #0056b3;
+}
+
+/* Form Styles */
 form {
   max-width: 400px;
   margin: 0 auto;
@@ -57,57 +109,10 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* Navbar Links Styles */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+/* Post Styles */
 
-.navbar-links {
-  display: flex;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
 
-.navbar-links li {
-  margin: 0 1rem;
-}
-
-.navbar-links a,
-.navbar-links button {
-  padding: 0.5rem 1rem;
-  background-color: transparent;
-  color: white; /* Ensure text color is white */
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
-  display: inline-block;
-}
-
-.navbar-links a:hover,
-.navbar-links button:hover {
-  background-color: #f0f0f0;
-  color: #0056b3;
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
+/* Card Styles */
 .card {
   padding: 2em;
 }

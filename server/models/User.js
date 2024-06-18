@@ -1,9 +1,7 @@
-const { Schema, model } = require("mongoose");
-const bcrypt = require("bcrypt");
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
-
-
-const userSchema = new Schema({
+const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
@@ -19,27 +17,35 @@ const userSchema = new Schema({
     required: true,
   },
   posts: [{
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Post',
   }],
 });
 
-
-
-userSchema.pre("save", async function (next) {
-  if (this.isNew || this.isModified("password")) {
-    const saltRounds = 10;
-    this.password = await bcrypt.hash(this.password, saltRounds);
+// Add a method to hash the password before saving the user
+userSchema.pre('save', async function(next) {
+  if (this.isModified('password') || this.isNew) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
   }
   next();
 });
 
-
-userSchema.methods.isCorrectPassword = async function (password) {
+// Add a method to compare the hashed password with the input password
+userSchema.methods.isCorrectPassword = async function(password) {
   return bcrypt.compare(password, this.password);
 };
 
+// Create a virtual property `id` that gets the `_id` field
+userSchema.virtual('id').get(function() {
+  return this._id.toHexString();
+});
 
-const User = model("User", userSchema);
+// Ensure virtual fields are serialized
+userSchema.set('toJSON', {
+  virtuals: true,
+});
+
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;

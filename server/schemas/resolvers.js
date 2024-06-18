@@ -9,7 +9,7 @@ const resolvers = {
     Query: {
         users: async () => await User.find({}),
         user: async (_, { username }) => await User.findOne({ username }),
-        posts: async () => await Post.find({}).sort({ date: -1 }), // Sort posts by date in descending order
+        posts: async () => await Post.find({}).sort({ date: -1 }),
         post: async (_, { id }) => await Post.findById(id),
         comments: async (_, { postId }) => await Comment.find({ post: postId }),
     },
@@ -83,16 +83,38 @@ const resolvers = {
 
             await newComment.save();
 
-            // Check if the comments array exists, if not initialize it
             if (!post.comments) {
                 post.comments = [];
             }
 
-            post.comments.push(newComment._id); // Push the comment ID instead of the entire comment object
+            post.comments.push(newComment._id);
             await post.save();
 
             return newComment;
         },
+        removePost: async (parent, { postId }, context) => {
+            if (context.user) {
+                const post = await Post.findById(postId);
+                if (post && post.author.toString() === context.user._id.toString()) {
+                    await Comment.deleteMany({ post: postId });
+                    await Post.findByIdAndDelete(postId);
+                    return post;
+                }
+                throw new AuthenticationError('You do not have permission to delete this post.');
+            }
+            throw new AuthenticationError('You need to be logged in!');
+        },
+        removeComment: async (parent, { commentId }, context) => {
+            if (context.user) {
+                const comment = await Comment.findById(commentId);
+                if (comment && comment.author.toString() === context.user._id.toString()) {
+                    await Comment.findByIdAndDelete(commentId);
+                    return comment;
+                }
+                throw new AuthenticationError('You do not have permission to delete this comment.');
+            }
+            throw new AuthenticationError('You need to be logged in!');
+        }
     },
     User: {
         posts: async (user) => await Post.find({ author: user._id }).sort({ date: -1 })

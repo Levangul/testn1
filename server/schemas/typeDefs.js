@@ -38,6 +38,8 @@ type Mutation {
   login(email: String!, password: String!): Auth
   addPost(text: String!): Post
   addComment(postId: ID!, text: String!): Comment
+  removePost(postId: ID!): Post
+  removeComment(commentId: ID!): Comment
 }
 `
 module.exports = typeDefs

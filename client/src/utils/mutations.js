@@ -23,6 +23,7 @@ export const SIGNUP_USER = gql`
     }
   }
 `;
+
 export const ADD_POST = gql`
   mutation addPost($text: String!) {
     addPost(text: $text) {
@@ -30,12 +31,14 @@ export const ADD_POST = gql`
       text
       date
       author {
+        id
         username
       }
       comments {
         id
         text
         author {
+          id
           username
         }
       }
@@ -49,6 +52,45 @@ export const ADD_COMMENT = gql`
       id
       text
       author {
+        id
+        username
+      }
+      post {
+        id
+      }
+    }
+  }
+`;
+
+export const REMOVE_POST = gql`
+  mutation removePost($postId: ID!) {
+    removePost(postId: $postId) {
+      id
+      text
+      date
+      author {
+        id
+        username
+      }
+      comments {
+        id
+        text
+        author {
+          id
+          username
+        }
+      }
+    }
+  }
+`;
+
+export const REMOVE_COMMENT = gql`
+  mutation removeComment($commentId: ID!) {
+    removeComment(commentId: $commentId) {
+      id
+      text
+      author {
+        id
         username
       }
       post {

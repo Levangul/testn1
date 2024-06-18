@@ -3,6 +3,7 @@ import { useMutation } from "@apollo/client";
 import { ADD_POST } from "../utils/mutations";
 import { GET_POSTS } from "../utils/queries";
 
+
 const CreatePost = () => {
   const [postText, setPostText] = useState("");
   const [addPost] = useMutation(ADD_POST, {
@@ -26,14 +27,15 @@ const CreatePost = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="create-post-form" onSubmit={handleSubmit}>
       <textarea
+        className="create-post-textarea"
         value={postText}
         onChange={(e) => setPostText(e.target.value)}
         placeholder="What's on your mind?"
         required
       />
-      <button type="submit">Post</button>
+      <button className="create-post-button" type="submit">Post</button>
     </form>
   );
 };

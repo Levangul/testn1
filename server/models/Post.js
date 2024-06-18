@@ -1,28 +1,35 @@
-const { Schema, model } = require('mongoose');
+const mongoose = require('mongoose');
 
-const postSchema = new Schema({
+const postSchema = new mongoose.Schema({
   text: {
     type: String,
-    required: 'This section cannot be empty!',
-    minlength: 1,
-    maxlength: 280,
-    trim: true,
-  },
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
     required: true,
   },
   date: {
     type: Date,
     default: Date.now,
   },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   comments: [{
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment',
-  }]
+  }],
 });
 
-const Post = model('Post', postSchema);
+// Create a virtual property `id` that gets the `_id` field
+postSchema.virtual('id').get(function() {
+  return this._id.toHexString();
+});
+
+// Ensure virtual fields are serialized
+postSchema.set('toJSON', {
+  virtuals: true,
+});
+
+const Post = mongoose.model('Post', postSchema);
 
 module.exports = Post;

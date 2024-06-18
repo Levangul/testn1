@@ -7,12 +7,14 @@ export const GET_POSTS = gql`
       text
       date
       author {
+        id
         username
       }
       comments {
         id
         text
         author {
+          id
           username
         }
       }
