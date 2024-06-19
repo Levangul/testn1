@@ -29,3 +29,25 @@ export const GET_USER = gql`
     }
   }
 `;
+
+export const GET_POSTS = gql`
+  query getPosts {
+    posts {
+      id
+      text
+      date
+      author {
+        id
+        username
+      }
+      comments {
+        id
+        text
+        author {
+          id
+          username
+        }
+      }
+    }
+  }
+`;

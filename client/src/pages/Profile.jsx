@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_USER } from '../utils/queries';
-import { UPDATE_USER_INFO } from '../utils/mutations'
-
-import { useAuth } from '../context/authContext';
-// import '../css/profile.css';
+import { UPDATE_USER_INFO } from '../utils/mutations';
+import { useAuth } from '../context/authContext'; // Ensure correct casing
+import Post from '../components/Post';
+import '../css/profile.css';
 
 const Profile = () => {
   const { user } = useAuth();
+
   const { loading, error, data } = useQuery(GET_USER, {
-    variables: { username: user.username },
+    variables: { username: user ? user.username : '' },
+    skip: !user,
   });
 
   const [city, setCity] = useState('');
@@ -17,6 +19,10 @@ const Profile = () => {
   const [aboutMe, setAboutMe] = useState('');
 
   const [updateUserInfo] = useMutation(UPDATE_USER_INFO);
+
+  if (!user) {
+    return <p>Loading user data...</p>;
+  }
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -28,7 +34,6 @@ const Profile = () => {
         variables: { city, birthday, aboutMe },
         refetchQueries: [{ query: GET_USER, variables: { username: user.username } }],
       });
-      // Optionally, clear form fields or show a success message
     } catch (err) {
       console.error('Error updating profile:', err);
     }
@@ -71,6 +76,11 @@ const Profile = () => {
         </div>
         <button type="submit">Update Profile</button>
       </form>
+
+      <h2>Your Posts</h2>
+      {data.user.posts.map((post) => (
+        <Post key={post.id} post={post} />
+      ))}
     </div>
   );
 };
