@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { ADD_POST } from "../utils/mutations";
-import { GET_USER } from "../utils/queries";
+import { GET_POSTS, GET_USER } from "../utils/queries";
 import { useAuth } from "../context/authContext";
 
 const CreatePost = () => {
@@ -10,12 +10,31 @@ const CreatePost = () => {
 
   const [addPost] = useMutation(ADD_POST, {
     update(cache, { data: { addPost } }) {
-      const existingData = cache.readQuery({ query: GET_USER, variables: { username: user.username } }) || { user: { posts: [] } };
-      cache.writeQuery({
-        query: GET_USER,
-        variables: { username: user.username },
-        data: { user: { ...existingData.user, posts: [addPost, ...existingData.user.posts] } },
-      });
+      // Update GET_POSTS cache
+      const existingPosts = cache.readQuery({ query: GET_POSTS });
+      if (existingPosts) {
+        cache.writeQuery({
+          query: GET_POSTS,
+          data: {
+            posts: [addPost, ...existingPosts.posts],
+          },
+        });
+      }
+
+      // Update GET_USER cache
+      const existingUser = cache.readQuery({ query: GET_USER, variables: { username: user.username } });
+      if (existingUser) {
+        cache.writeQuery({
+          query: GET_USER,
+          variables: { username: user.username },
+          data: {
+            user: {
+              ...existingUser.user,
+              posts: [addPost, ...existingUser.user.posts],
+            },
+          },
+        });
+      }
     },
   });
 

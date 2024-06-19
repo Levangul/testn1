@@ -19,7 +19,6 @@ const userSchema = new mongoose.Schema({
   posts: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Post',
-
   }],
   city: {
     type: String,

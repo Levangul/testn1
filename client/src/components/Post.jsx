@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT } from '../utils/mutations';
-import { GET_POSTS } from '../utils/queries'; // Ensure this is imported correctly
+import { GET_POSTS, GET_USER } from '../utils/queries';
 import { useAuth } from '../context/authContext';
 import '../css/post.css';
 
@@ -10,22 +10,6 @@ const Post = ({ post }) => {
   const { user } = useAuth();
 
   const [addComment] = useMutation(ADD_COMMENT, {
-    optimisticResponse: {
-      addComment: {
-        __typename: 'Comment',
-        id: Math.random().toString(),
-        text: commentText,
-        author: {
-          __typename: 'User',
-          id: user?.id || '',
-          username: user?.username || '',
-        },
-        post: {
-          __typename: 'Post',
-          id: post.id,
-        },
-      },
-    },
     update(cache, { data: { addComment } }) {
       const postId = post.id;
       const existingPosts = cache.readQuery({ query: GET_POSTS }) || { posts: [] };
@@ -46,16 +30,6 @@ const Post = ({ post }) => {
   });
 
   const [removePost] = useMutation(REMOVE_POST, {
-    optimisticResponse: {
-      removePost: {
-        __typename: 'Post',
-        id: post.id,
-        text: post.text,
-        date: post.date,
-        author: post.author,
-        comments: post.comments,
-      },
-    },
     update(cache, { data: { removePost } }) {
       const existingPosts = cache.readQuery({ query: GET_POSTS }) || { posts: [] };
       const updatedPosts = existingPosts.posts.filter((p) => p.id !== removePost.id);
@@ -63,26 +37,23 @@ const Post = ({ post }) => {
         query: GET_POSTS,
         data: { posts: updatedPosts },
       });
+
+      const existingUser = cache.readQuery({ query: GET_USER, variables: { username: user.username } }) || { user: { posts: [] } };
+      const updatedUserPosts = existingUser.user.posts.filter((p) => p.id !== removePost.id);
+      cache.writeQuery({
+        query: GET_USER,
+        variables: { username: user.username },
+        data: {
+          user: {
+            ...existingUser.user,
+            posts: updatedUserPosts,
+          },
+        },
+      });
     },
   });
 
   const [removeComment] = useMutation(REMOVE_COMMENT, {
-    optimisticResponse: {
-      removeComment: {
-        __typename: 'Comment',
-        id: Math.random().toString(),
-        text: commentText,
-        author: {
-          __typename: 'User',
-          id: user?.id || '',
-          username: user?.username || '',
-        },
-        post: {
-          __typename: 'Post',
-          id: post.id,
-        },
-      },
-    },
     update(cache, { data: { removeComment } }) {
       const postId = post.id;
       const existingPosts = cache.readQuery({ query: GET_POSTS }) || { posts: [] };
@@ -166,3 +137,4 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
