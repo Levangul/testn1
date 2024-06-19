@@ -5,6 +5,9 @@ type User {
     email: String
     password: String
     posts: [Post]
+    city: String
+    birthday: String
+    aboutMe: String
 
 }
 type Post {
@@ -40,6 +43,7 @@ type Mutation {
   addComment(postId: ID!, text: String!): Comment
   removePost(postId: ID!): Post
   removeComment(commentId: ID!): Comment
+  updateUserInfo(city: String, birthday: String, aboutMe: String): User
 }
 `
 module.exports = typeDefs

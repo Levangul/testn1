@@ -19,7 +19,20 @@ const userSchema = new mongoose.Schema({
   posts: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Post',
+
   }],
+  city: {
+    type: String,
+    required: false,
+  },
+  birthday: {
+    type: Date,
+    required: false,
+  },
+  aboutMe: {
+    type: String,
+    required: false,
+  },
 });
 
 // Add a method to hash the password before saving the user

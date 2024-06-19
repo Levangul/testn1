@@ -99,3 +99,15 @@ export const REMOVE_COMMENT = gql`
     }
   }
 `;
+
+export const UPDATE_USER_INFO = gql`
+  mutation updateUserInfo($city: String, $birthday: String, $aboutMe: String) {
+    updateUserInfo(city: $city, birthday: $birthday, aboutMe: $aboutMe) {
+      id
+      username
+      city
+      birthday
+      aboutMe
+    }
+  }
+`;

@@ -104,6 +104,17 @@ const resolvers = {
             }
             throw new AuthenticationError('You need to be logged in!');
         },
+        updateUserInfo: async (parent, { city, birthday, aboutMe }, context) => {
+            if (context.user) {
+                const updatedUser = await User.findByIdAndUpdate(
+                    context.user._id,
+                    { city, birthday, aboutMe },
+                    { new: true }
+                );
+                return updatedUser;
+            }
+            throw new AuthenticationError('You need to be logged in!');
+        },
         removeComment: async (parent, { commentId }, context) => {
             if (context.user) {
                 const comment = await Comment.findById(commentId);
@@ -116,6 +127,7 @@ const resolvers = {
             throw new AuthenticationError('You need to be logged in!');
         }
     },
+
     User: {
         posts: async (user) => await Post.find({ author: user._id }).sort({ date: -1 })
     },

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
-import { GET_POSTS } from '../utils/queries';
+import { useMutation, useQuery } from '@apollo/client';
+import { GET_USER } from '../utils/queries';
 import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT } from '../utils/mutations';
 import { useAuth } from '../context/authContext';
 import '../css/post.css';
@@ -9,16 +9,14 @@ const Post = ({ post }) => {
   const [commentText, setCommentText] = useState('');
   const { user } = useAuth(); // Get the logged-in user's information
 
-  console.log("Logged-in user ID:", user && user.id);
-  console.log("Post author ID:", post.author.id);
-  post.comments.forEach(comment => {
-    console.log("Comment author ID:", comment.author.id);
+  const { data: userData } = useQuery(GET_USER, {
+    variables: { username: user.username },
   });
 
   const [addComment] = useMutation(ADD_COMMENT, {
     update(cache, { data: { addComment } }) {
-      const { posts } = cache.readQuery({ query: GET_POSTS });
-      const updatedPosts = posts.map((p) => {
+      const existingData = cache.readQuery({ query: GET_USER, variables: { username: user.username } });
+      const updatedPosts = existingData.user.posts.map((p) => {
         if (p.id === post.id) {
           return {
             ...p,
@@ -28,27 +26,29 @@ const Post = ({ post }) => {
         return p;
       });
       cache.writeQuery({
-        query: GET_POSTS,
-        data: { posts: updatedPosts },
+        query: GET_USER,
+        variables: { username: user.username },
+        data: { user: { ...existingData.user, posts: updatedPosts } },
       });
-    }
+    },
   });
 
   const [removePost] = useMutation(REMOVE_POST, {
     update(cache, { data: { removePost } }) {
-      const { posts } = cache.readQuery({ query: GET_POSTS });
-      const updatedPosts = posts.filter(p => p.id !== removePost.id);
+      const existingData = cache.readQuery({ query: GET_USER, variables: { username: user.username } });
+      const updatedPosts = existingData.user.posts.filter(p => p.id !== removePost.id);
       cache.writeQuery({
-        query: GET_POSTS,
-        data: { posts: updatedPosts },
+        query: GET_USER,
+        variables: { username: user.username },
+        data: { user: { ...existingData.user, posts: updatedPosts } },
       });
-    }
+    },
   });
 
   const [removeComment] = useMutation(REMOVE_COMMENT, {
     update(cache, { data: { removeComment } }) {
-      const { posts } = cache.readQuery({ query: GET_POSTS });
-      const updatedPosts = posts.map((p) => {
+      const existingData = cache.readQuery({ query: GET_USER, variables: { username: user.username } });
+      const updatedPosts = existingData.user.posts.map((p) => {
         if (p.id === post.id) {
           return {
             ...p,
@@ -58,10 +58,11 @@ const Post = ({ post }) => {
         return p;
       });
       cache.writeQuery({
-        query: GET_POSTS,
-        data: { posts: updatedPosts },
+        query: GET_USER,
+        variables: { username: user.username },
+        data: { user: { ...existingData.user, posts: updatedPosts } },
       });
-    }
+    },
   });
 
   const handleCommentSubmit = async (e) => {

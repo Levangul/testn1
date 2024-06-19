@@ -1,11 +1,11 @@
 import React from 'react';
 import { useQuery } from '@apollo/client';
-import { GET_POSTS } from '../utils/queries';
+import { GET_USER } from '../utils/queries';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
 
 const Homepage = () => {
-  const { loading, error, data } = useQuery(GET_POSTS);
+  const { loading, error, data } = useQuery(GET_USER);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;

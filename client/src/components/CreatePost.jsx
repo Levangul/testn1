@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { ADD_POST } from "../utils/mutations";
-import { GET_POSTS } from "../utils/queries";
+import { GET_USER } from "../utils/queries";
 
 
 const CreatePost = () => {
   const [postText, setPostText] = useState("");
   const [addPost] = useMutation(ADD_POST, {
     update(cache, { data: { addPost } }) {
-      const { posts } = cache.readQuery({ query: GET_POSTS });
+      const { posts } = cache.readQuery({ query: GET_USER });
       cache.writeQuery({
-        query: GET_POSTS,
+        query: GET_USER,
         data: { posts: [addPost, ...posts] },
       });
     },
