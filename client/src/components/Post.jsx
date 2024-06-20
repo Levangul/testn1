@@ -27,10 +27,34 @@ const Post = ({ post }) => {
         data: { posts: updatedPosts },
       });
     },
+    onError(error) {
+      console.error("Error adding comment:", error);
+    },
+    optimisticResponse: {
+      addComment: {
+        id: Math.random().toString(36).substr(2, 9),
+        text: commentText,
+        author: {
+          id: user.id,
+          username: user.username,
+          __typename: 'User',
+        },
+        post: {
+          id: post.id,
+          __typename: 'Post',
+        },
+        __typename: 'Comment',
+      }
+    },
   });
 
   const [removePost] = useMutation(REMOVE_POST, {
     update(cache, { data: { removePost } }) {
+      if (!removePost || !removePost.id) {
+        console.error("removePost mutation did not return id.");
+        return;
+      }
+
       const existingPosts = cache.readQuery({ query: GET_POSTS }) || { posts: [] };
       const updatedPosts = existingPosts.posts.filter((p) => p.id !== removePost.id);
       cache.writeQuery({
@@ -51,6 +75,15 @@ const Post = ({ post }) => {
         },
       });
     },
+    onError(error) {
+      console.error("Error removing post:", error);
+    },
+    optimisticResponse: {
+      removePost: {
+        id: post.id,
+        __typename: 'Post'
+      }
+    },
   });
 
   const [removeComment] = useMutation(REMOVE_COMMENT, {
@@ -70,6 +103,15 @@ const Post = ({ post }) => {
         query: GET_POSTS,
         data: { posts: updatedPosts },
       });
+    },
+    onError(error) {
+      console.error("Error removing comment:", error);
+    },
+    optimisticResponse: {
+      removeComment: {
+        id: Math.random().toString(36).substr(2, 9),
+        __typename: 'Comment'
+      }
     },
   });
 
@@ -137,4 +179,3 @@ const Post = ({ post }) => {
 };
 
 export default Post;
-
