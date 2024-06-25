@@ -41,17 +41,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 2rem; /* Maintain padding on the sides */
 }
 
-.navbar-links {
+.navbar-brand,
+.navbar-links,
+.auth-links {
+  flex: 1; /* Each section takes equal space */
   display: flex;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  justify-content: center; /* Center content by default */
 }
 
-.navbar-links li {
-  margin: 0 1rem;
+.navbar-brand {
+  justify-content: flex-start; /* Aligns the brand logo to the left */
+}
+
+.auth-links {
+  justify-content: flex-end; /* Aligns auth links to the right */
 }
 
 .navbar-links a,
@@ -71,6 +77,7 @@
   background-color: #f0f0f0;
   color: #0056b3;
 }
+
 
 /* Form Styles */
 form {

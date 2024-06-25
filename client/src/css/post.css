@@ -125,13 +125,13 @@
 }
 
 .delete-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1em;
-    color: red;
-  }
-  
-  .delete-button:hover {
-    color: darkred;
-  }
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  color: red;
+}
+
+.delete-button:hover {
+  color: darkred;
+}
