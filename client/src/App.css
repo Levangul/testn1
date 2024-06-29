@@ -112,13 +112,18 @@ button {
   cursor: pointer;
 }
 
+h1 {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+
+
 button:hover {
   background-color: #0056b3;
 }
 
-/* Post Styles */
 
-/* Card Styles */
 .card {
   padding: 2em;
 }
