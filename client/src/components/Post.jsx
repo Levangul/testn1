@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT } from '../utils/mutations';
 import { GET_POSTS, GET_USER } from '../utils/queries';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context/AuthContext';
 import '../css/post.css';
 
 const Post = ({ post }) => {
@@ -11,6 +11,8 @@ const Post = ({ post }) => {
 
   const [addComment] = useMutation(ADD_COMMENT, {
     update(cache, { data: { addComment } }) {
+      if (!post || !post.id) return;
+
       const postId = post.id;
       const existingPosts = cache.readQuery({ query: GET_POSTS }) || { posts: [] };
       const updatedPosts = existingPosts.posts.map((p) => {
@@ -35,8 +37,8 @@ const Post = ({ post }) => {
         id: Math.random().toString(36).substr(2, 9),
         text: commentText,
         author: {
-          id: user.id,
-          username: user.username,
+          id: user ? user.id : null,
+          username: user ? user.username : "Anonymous",
           __typename: 'User',
         },
         post: {
@@ -62,11 +64,11 @@ const Post = ({ post }) => {
         data: { posts: updatedPosts },
       });
 
-      const existingUser = cache.readQuery({ query: GET_USER, variables: { username: user.username } }) || { user: { posts: [] } };
+      const existingUser = cache.readQuery({ query: GET_USER, variables: { username: user ? user.username : "" } }) || { user: { posts: [] } };
       const updatedUserPosts = existingUser.user.posts.filter((p) => p.id !== removePost.id);
       cache.writeQuery({
         query: GET_USER,
-        variables: { username: user.username },
+        variables: { username: user ? user.username : "" },
         data: {
           user: {
             ...existingUser.user,
@@ -88,6 +90,8 @@ const Post = ({ post }) => {
 
   const [removeComment] = useMutation(REMOVE_COMMENT, {
     update(cache, { data: { removeComment } }) {
+      if (!post || !post.id) return;
+
       const postId = post.id;
       const existingPosts = cache.readQuery({ query: GET_POSTS }) || { posts: [] };
       const updatedPosts = existingPosts.posts.map((p) => {
@@ -117,6 +121,10 @@ const Post = ({ post }) => {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      console.error('You must be logged in to add a comment.');
+      return;
+    }
     try {
       await addComment({ variables: { postId: post.id, text: commentText } });
       setCommentText('');
@@ -126,6 +134,10 @@ const Post = ({ post }) => {
   };
 
   const handlePostDelete = async () => {
+    if (!user) {
+      console.error('You must be logged in to delete a post.');
+      return;
+    }
     try {
       await removePost({ variables: { postId: post.id } });
     } catch (err) {
@@ -134,12 +146,20 @@ const Post = ({ post }) => {
   };
 
   const handleCommentDelete = async (commentId) => {
+    if (!user) {
+      console.error('You must be logged in to delete a comment.');
+      return;
+    }
     try {
       await removeComment({ variables: { commentId } });
     } catch (err) {
       console.error('Error removing comment:', err);
     }
   };
+
+  if (!post || !post.id || !post.author || !post.comments) {
+    return <p>Loading post...</p>;
+  }
 
   return (
     <div className="post-container">
@@ -163,19 +183,22 @@ const Post = ({ post }) => {
           ))}
         </div>
       </div>
-      <form className="comment-form" onSubmit={handleCommentSubmit}>
-        <input
-          className="comment-input"
-          type="text"
-          value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
-          placeholder="Add a comment"
-          required
-        />
-        <button className="comment-button" type="submit">Comment</button>
-      </form>
+      {user && (
+        <form className="comment-form" onSubmit={handleCommentSubmit}>
+          <input
+            className="comment-input"
+            type="text"
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder="Add a comment"
+            required
+          />
+          <button className="comment-button" type="submit">Comment</button>
+        </form>
+      )}
     </div>
   );
 };
 
 export default Post;
+

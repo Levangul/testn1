@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { ADD_POST } from "../utils/mutations";
 import { GET_POSTS, GET_USER } from "../utils/queries";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../context/AuthContext";
 
 const CreatePost = () => {
   const [postText, setPostText] = useState("");

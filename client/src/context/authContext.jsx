@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("id_token");
     setIsAuthenticated(false);
     setUser(null);
+    // Navigate to home page after logout
     window.location.assign("/");
   };
 
