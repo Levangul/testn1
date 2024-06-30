@@ -74,6 +74,11 @@
 
 .logout-button .svg-inline--fa {
   font-size: 1.5rem; /* Adjust the icon size */
+
+}
+
+.logout {
+  margin-right: 40px;
 }
 
 /* Adjustments for Mobile */

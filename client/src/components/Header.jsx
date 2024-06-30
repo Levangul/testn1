@@ -26,7 +26,7 @@ const Header = () => {
         </ul>
         {isAuthenticated ? (
           <ul className="auth-links">
-            <li>
+            <li className='logout'>
               <button onClick={handleLogout} className="nav-item logout-button">
                 <FontAwesomeIcon icon={faDoorOpen} />
               </button>
