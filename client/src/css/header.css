@@ -1,4 +1,4 @@
-.header {
+/* .header {
   background-color: #333;
   padding: 1rem 2rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -64,16 +64,16 @@
 }
 
 .auth-links .nav-item {
-  padding: 0.5rem 1.5rem; /* Added more padding for better spacing */
-  margin: 0 0.5rem; /* Added margin to space out the buttons */
+  padding: 0.5rem 1.5rem;
+  margin: 0 0.5rem;
 }
 
 .logout-button {
-  margin-right: 2rem; /* Match the right margin to the padding at the start of the brand */
+  margin-right: 2rem; 
 }
 
 .logout-button .svg-inline--fa {
-  font-size: 1.5rem; /* Adjust the icon size */
+  font-size: 1.5rem; 
 
 }
 
@@ -81,7 +81,7 @@
   margin-right: 40px;
 }
 
-/* Adjustments for Mobile */
+
 @media (max-width: 768px) {
   .navbar {
     flex-direction: column;
@@ -105,4 +105,4 @@
     margin: 0.5rem 0;
   }
 }
-
+ */

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_USER } from '../utils/queries';
 import { UPDATE_USER_INFO } from '../utils/mutations';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context/AuthContext';
 import Post from '../components/Post';
 import '../css/profile.css';
 

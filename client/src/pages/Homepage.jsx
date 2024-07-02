@@ -14,7 +14,7 @@ const Homepage = () => {
 
   return (
     <section>
-      <h1>Social Media Application</h1>
+      <h1>Latest news</h1>
       {user && <CreatePost />}
       {data.posts.map((post) => (
         <Post key={post.id} post={post} />

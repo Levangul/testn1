@@ -1,4 +1,4 @@
-.post-container {
+/* .post-container {
   width: 100%;
   max-width: 600px;
   margin: 20px auto;
@@ -7,29 +7,23 @@
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: #f9f9f9;
-}
+} */
 
-.post-content {
+/* .post-content {
   margin-bottom: 20px;
-}
+} */
 
-.post-author {
+/* .post-author {
   font-weight: bold;
   font-size: 1.5em;
   color: #007bff;
 }
 
-.post-text {
-  font-size: 1.2em;
-  color: #333;
-  margin-top: 10px;
-  margin-bottom: 20px;
-}
 
-/* Comments Section Styles */
+
 .comments-section {
   margin-top: 20px;
-}
+} 
 
 .comment {
   margin-bottom: 10px;
@@ -42,14 +36,14 @@
 
 .comment-username {
   font-weight: bold;
-  color: #007bff;
+  color: #557fac;
 }
 
 .comment-text {
   color: #333;
 }
 
-/* Comment Form Styles */
+
 .comment-form {
   display: flex;
   flex-direction: column;
@@ -81,7 +75,7 @@
   background-color: #0056b3;
 }
 
-/* Create Post Form Styles */
+
 .create-post-form {
   display: flex;
   flex-direction: column;
@@ -124,14 +118,10 @@
   background-color: #0056b3;
 }
 
-.delete-button {
+ .delete-button {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 1em;
-  color: red;
-}
-
-.delete-button:hover {
-  color: darkred;
-}
+  color: rgb(192, 192, 192);
+}  */
