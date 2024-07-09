@@ -9,6 +9,7 @@ const resolvers = {
     Query: {
         users: async () => await User.find({}),
         user: async (_, { username }) => await User.findOne({ username }),
+        userById: async (_, { id }) => await User.findById(id),
         posts: async () => await Post.find({}).sort({ date: -1 }),
         post: async (_, { id }) => await Post.findById(id),
         comments: async (_, { postId }) => await Comment.find({ post: postId }),

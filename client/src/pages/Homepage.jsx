@@ -13,8 +13,8 @@ const Homepage = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <section>
-      <h1>Latest news</h1>
+    <section className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">Latest news</h1>
       {user && <CreatePost />}
       {data.posts.map((post) => (
         <Post key={post.id} post={post} />

@@ -49,17 +49,18 @@ const CreatePost = () => {
   };
 
   return (
-    <form className="create-post-form" onSubmit={handleSubmit}>
+    <form className="bg-white shadow-md rounded-lg p-4 mb-4" onSubmit={handleSubmit}>
       <textarea
-        className="create-post-textarea"
+        className="w-full p-2 border border-gray-300 rounded-md mb-2 text-gray-900"
         value={postText}
         onChange={(e) => setPostText(e.target.value)}
         placeholder="What's on your mind?"
         required
       />
-      <button className="create-post-button" type="submit">Post</button>
+      <button className="bg-blue-500 text-white px-4 py-2 rounded" type="submit">Post</button>
     </form>
   );
 };
 
 export default CreatePost;
+

@@ -3,7 +3,7 @@ import { useMutation } from '@apollo/client';
 import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT } from '../utils/mutations';
 import { GET_POSTS, GET_USER } from '../utils/queries';
 import { useAuth } from '../context/AuthContext';
-import '../css/post.css';
+import { Link } from 'react-router-dom';
 
 const Post = ({ post }) => {
   const [commentText, setCommentText] = useState('');
@@ -162,38 +162,40 @@ const Post = ({ post }) => {
   }
 
   return (
-    <div className="post-container">
+    <div className="bg-white shadow-md rounded-lg p-4 mb-4">
       <div className="post-content">
-        <h3 className="post-author">
-          {post.author.username}
+        <h3 className="post-author text-lg font-semibold mb-2 text-gray-900">
+          <Link to={`/user/${post.author.username}`} className="text-blue-500 hover:underline">{post.author.username}</Link>
           {user && user.id === post.author.id && (
-            <button className="delete-button" onClick={handlePostDelete}>🗑️</button>
+            <button className="delete-button text-red-500 hover:text-red-700 ml-2" onClick={handlePostDelete}>🗑️</button>
           )}
         </h3>
-        <p className="post-text">{post.text}</p>
+        <p className="post-text mb-4 text-gray-900">{post.text}</p>
         <div className="comments-section">
-          <h4>Comments</h4>
+          <h4 className="text-md font-semibold mb-2 text-gray-900">Comments</h4>
           {post.comments.map((comment) => (
-            <div key={comment.id} className="comment">
-              <span className="comment-username">{comment.author.username}</span>: <span className="comment-text">{comment.text}</span>
+            <div key={comment.id} className="comment mb-2">
+              <span className="comment-username font-semibold text-gray-900">
+                <Link to={`/user/${comment.author.username}`} className="text-blue-500 hover:underline">{comment.author.username}</Link>
+              </span>: <span className="comment-text text-gray-900">{comment.text}</span>
               {user && user.id === comment.author.id && (
-                <button className="delete-button" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
+                <button className="delete-button text-red-500 hover:text-red-700 ml-2" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
               )}
             </div>
           ))}
         </div>
       </div>
       {user && (
-        <form className="comment-form" onSubmit={handleCommentSubmit}>
+        <form className="comment-form mt-4" onSubmit={handleCommentSubmit}>
           <input
-            className="comment-input"
+            className="comment-input w-full p-2 border border-gray-300 rounded-md text-gray-900"
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Add a comment"
             required
           />
-          <button className="comment-button" type="submit">Comment</button>
+          <button className="comment-button mt-2 bg-blue-500 text-white px-4 py-2 rounded" type="submit">Comment</button>
         </form>
       )}
     </div>
@@ -201,4 +203,5 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 

@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import './App.css';
-import { AuthProvider } from "./context/authContext";
+import { AuthProvider } from "./context/AuthContext";
 import Header from './components/Header';
 import cache from './utils/cache'
 
