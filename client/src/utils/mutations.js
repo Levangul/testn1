@@ -88,13 +88,14 @@ export const REMOVE_COMMENT = gql`
 `;
 
 export const UPDATE_USER_INFO = gql`
-  mutation updateUserInfo($city: String, $birthday: String, $aboutMe: String) {
-    updateUserInfo(city: $city, birthday: $birthday, aboutMe: $aboutMe) {
+  mutation updateUserInfo($city: String, $birthday: String, $aboutMe: String, $profilePicture: String) {
+    updateUserInfo(city: $city, birthday: $birthday, aboutMe: $aboutMe, profilePicture: $profilePicture) {
       id
       username
       city
       birthday
       aboutMe
+      profilePicture
     }
   }
 `;

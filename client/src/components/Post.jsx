@@ -14,23 +14,26 @@ const Post = ({ post }) => {
       if (!post || !post.id) return;
 
       const postId = post.id;
-      const existingPosts = cache.readQuery({ query: GET_POSTS }) || { posts: [] };
-      const updatedPosts = existingPosts.posts.map((p) => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            comments: [...p.comments, addComment],
-          };
-        }
-        return p;
-      });
-      cache.writeQuery({
-        query: GET_POSTS,
-        data: { posts: updatedPosts },
-      });
+      const existingPosts = cache.readQuery({ query: GET_POSTS });
+
+      if (existingPosts && existingPosts.posts) {
+        const updatedPosts = existingPosts.posts.map((p) => {
+          if (p.id === postId) {
+            return {
+              ...p,
+              comments: [...p.comments, addComment],
+            };
+          }
+          return p;
+        });
+        cache.writeQuery({
+          query: GET_POSTS,
+          data: { posts: updatedPosts },
+        });
+      }
     },
     onError(error) {
-      console.error("Error adding comment:", error);
+      console.error('Error adding comment:', error);
     },
     optimisticResponse: {
       addComment: {
@@ -38,7 +41,7 @@ const Post = ({ post }) => {
         text: commentText,
         author: {
           id: user ? user.id : null,
-          username: user ? user.username : "Anonymous",
+          username: user ? user.username : 'Anonymous',
           __typename: 'User',
         },
         post: {
@@ -46,45 +49,51 @@ const Post = ({ post }) => {
           __typename: 'Post',
         },
         __typename: 'Comment',
-      }
+      },
     },
   });
 
   const [removePost] = useMutation(REMOVE_POST, {
     update(cache, { data: { removePost } }) {
       if (!removePost || !removePost.id) {
-        console.error("removePost mutation did not return id.");
+        console.error('removePost mutation did not return id.');
         return;
       }
 
-      const existingPosts = cache.readQuery({ query: GET_POSTS }) || { posts: [] };
-      const updatedPosts = existingPosts.posts.filter((p) => p.id !== removePost.id);
-      cache.writeQuery({
-        query: GET_POSTS,
-        data: { posts: updatedPosts },
-      });
+      const existingPosts = cache.readQuery({ query: GET_POSTS });
 
-      const existingUser = cache.readQuery({ query: GET_USER, variables: { username: user ? user.username : "" } }) || { user: { posts: [] } };
-      const updatedUserPosts = existingUser.user.posts.filter((p) => p.id !== removePost.id);
-      cache.writeQuery({
-        query: GET_USER,
-        variables: { username: user ? user.username : "" },
-        data: {
-          user: {
-            ...existingUser.user,
-            posts: updatedUserPosts,
+      if (existingPosts && existingPosts.posts) {
+        const updatedPosts = existingPosts.posts.filter((p) => p.id !== removePost.id);
+        cache.writeQuery({
+          query: GET_POSTS,
+          data: { posts: updatedPosts },
+        });
+      }
+
+      const existingUser = cache.readQuery({ query: GET_USER, variables: { username: user ? user.username : '' } });
+
+      if (existingUser && existingUser.user && existingUser.user.posts) {
+        const updatedUserPosts = existingUser.user.posts.filter((p) => p.id !== removePost.id);
+        cache.writeQuery({
+          query: GET_USER,
+          variables: { username: user ? user.username : '' },
+          data: {
+            user: {
+              ...existingUser.user,
+              posts: updatedUserPosts,
+            },
           },
-        },
-      });
+        });
+      }
     },
     onError(error) {
-      console.error("Error removing post:", error);
+      console.error('Error removing post:', error);
     },
     optimisticResponse: {
       removePost: {
         id: post.id,
-        __typename: 'Post'
-      }
+        __typename: 'Post',
+      },
     },
   });
 
@@ -93,29 +102,32 @@ const Post = ({ post }) => {
       if (!post || !post.id) return;
 
       const postId = post.id;
-      const existingPosts = cache.readQuery({ query: GET_POSTS }) || { posts: [] };
-      const updatedPosts = existingPosts.posts.map((p) => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            comments: p.comments.filter((comment) => comment.id !== removeComment.id),
-          };
-        }
-        return p;
-      });
-      cache.writeQuery({
-        query: GET_POSTS,
-        data: { posts: updatedPosts },
-      });
+      const existingPosts = cache.readQuery({ query: GET_POSTS });
+
+      if (existingPosts && existingPosts.posts) {
+        const updatedPosts = existingPosts.posts.map((p) => {
+          if (p.id === postId) {
+            return {
+              ...p,
+              comments: p.comments.filter((comment) => comment.id !== removeComment.id),
+            };
+          }
+          return p;
+        });
+        cache.writeQuery({
+          query: GET_POSTS,
+          data: { posts: updatedPosts },
+        });
+      }
     },
     onError(error) {
-      console.error("Error removing comment:", error);
+      console.error('Error removing comment:', error);
     },
     optimisticResponse: {
       removeComment: {
         id: Math.random().toString(36).substr(2, 9),
-        __typename: 'Comment'
-      }
+        __typename: 'Comment',
+      },
     },
   });
 
@@ -167,7 +179,7 @@ const Post = ({ post }) => {
         <h3 className="post-author text-lg font-semibold mb-2 text-gray-900">
           <Link to={`/user/${post.author.username}`} className="text-blue-500 hover:underline">{post.author.username}</Link>
           {user && user.id === post.author.id && (
-            <button className="delete-button text-red-500 hover:text-red-700 ml-2" onClick={handlePostDelete}>🗑️</button>
+            <button className="delete-button text-red-500 hover:text-red-700 ml-2 bg-transparent border-none" onClick={handlePostDelete}>🗑️</button>
           )}
         </h3>
         <p className="post-text mb-4 text-gray-900">{post.text}</p>
@@ -179,7 +191,7 @@ const Post = ({ post }) => {
                 <Link to={`/user/${comment.author.username}`} className="text-blue-500 hover:underline">{comment.author.username}</Link>
               </span>: <span className="comment-text text-gray-900">{comment.text}</span>
               {user && user.id === comment.author.id && (
-                <button className="delete-button text-red-500 hover:text-red-700 ml-2" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
+                <button className="delete-button text-red-500 hover:text-red-700 ml-2 bg-transparent border-none" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
               )}
             </div>
           ))}
@@ -203,5 +215,3 @@ const Post = ({ post }) => {
 };
 
 export default Post;
-
-

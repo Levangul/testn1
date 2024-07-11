@@ -8,6 +8,7 @@ type User {
   city: String
   birthday: String
   aboutMe: String
+  profilePicture: String
 }
 
 type Post {
@@ -47,7 +48,7 @@ type Mutation {
   addComment(postId: ID!, text: String!): Comment
   removePost(postId: ID!): Post
   removeComment(commentId: ID!): Comment
-  updateUserInfo(city: String, birthday: String, aboutMe: String): User
+  updateUserInfo(city: String, birthday: String, aboutMe: String, profilePicture: String): User
 }
 `
 module.exports = typeDefs;

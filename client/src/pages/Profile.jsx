@@ -21,6 +21,8 @@ const Profile = () => {
   const [city, setCity] = useState('');
   const [birthday, setBirthday] = useState('');
   const [aboutMe, setAboutMe] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
+  const [profileImageUrl, setProfileImageUrl] = useState('');
 
   const [updateUserInfo] = useMutation(UPDATE_USER_INFO);
 
@@ -29,6 +31,7 @@ const Profile = () => {
       setCity(data.user.city || '');
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
+      setProfileImageUrl(data.user.profilePicture || ''); // Assuming profilePicture is a field in the user data
     }
   }, [data]);
 
@@ -42,13 +45,30 @@ const Profile = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      await updateUserInfo({
-        variables: { city, birthday: new Date(birthday).getTime().toString(), aboutMe },
+      const updateFields = {
+        city: city !== '' ? city : null,
+        birthday: birthday !== '' ? new Date(birthday).getTime().toString() : null,
+        aboutMe: aboutMe !== '' ? aboutMe : null,
+        profilePicture: profileImageUrl, // Update with the new profile image URL
+      };
+
+      console.log('Updating profile with:', updateFields);
+
+      const response = await updateUserInfo({
+        variables: updateFields,
         refetchQueries: [{ query: GET_USER, variables: { username: user.username } }],
       });
+
+      console.log('Update response:', response);
       setEditable(false);
     } catch (err) {
       console.error('Error updating profile:', err);
+      if (err.graphQLErrors) {
+        console.error('GraphQL errors:', err.graphQLErrors);
+      }
+      if (err.networkError) {
+        console.error('Network error:', err.networkError);
+      }
     }
   };
 
@@ -58,6 +78,42 @@ const Profile = () => {
       setCity(data.user.city || '');
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
+      setProfileImageUrl(data.user.profilePicture || '');
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setProfileImage(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfileImageUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleImageUpload = async () => {
+    if (!profileImage) return;
+
+    const formData = new FormData();
+    formData.append('file', profileImage);
+
+    try {
+      const response = await fetch('http://localhost:3001/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        console.error('Failed to upload image', await response.text());
+        return;
+      }
+
+      const data = await response.json();
+      setProfileImageUrl(data.url); // Update with the uploaded image URL
+    } catch (error) {
+      console.error('Error uploading image:', error);
     }
   };
 
@@ -68,56 +124,83 @@ const Profile = () => {
   return (
     <div className="profile-container p-4">
       <div className="profile-card bg-white shadow-md rounded p-4">
-        <h1 className="text-2xl font-bold mb-4">{data.user.username}'s Profile</h1>
-        <p>Email: {data.user.email}</p>
-
-        {editable ? (
-          <form className="profile-form" onSubmit={handleUpdateProfile}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">City:</label>
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+        <div className="profile-section mb-4 text-center">
+          <img
+            src={profileImageUrl || 'https://via.placeholder.com/150'}
+            alt="Profile"
+            className="profile-image rounded-full mb-4"
+            style={{ width: '150px', height: '150px' }}
+          />
+          {editable && (
+            <>
+              <input type="file" onChange={handleImageChange} className="mb-4" />
+              <button onClick={handleImageUpload} className="bg-blue-500 text-white px-4 py-2 rounded">Upload Image</button>
+            </>
+          )}
+        </div>
+        <div className="profile-section mb-4">
+          <h1 className="text-2xl font-bold mb-4">{data.user.username}'s Profile</h1>
+          <div className="profile-info">
+            <div className="info-item">
+              <span className="label">City:</span>
+              {editable ? (
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="value-edit"
+                />
+              ) : (
+                <span className="value">{data.user.city || 'N/A'}</span>
+              )}
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Birthday:</label>
-              <input
-                type="date"
-                value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+            <div className="info-item">
+              <span className="label">Birthday:</span>
+              {editable ? (
+                <input
+                  type="date"
+                  value={birthday}
+                  onChange={(e) => setBirthday(e.target.value)}
+                  className="value-edit"
+                />
+              ) : (
+                <span className="value">{data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : 'N/A'}</span>
+              )}
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">About Me:</label>
-              <textarea
-                value={aboutMe}
-                onChange={(e) => setAboutMe(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+            <div className="info-item">
+              <span className="label">About Me:</span>
+              {editable ? (
+                <textarea
+                  value={aboutMe}
+                  onChange={(e) => setAboutMe(e.target.value)}
+                  className="value-edit"
+                />
+              ) : (
+                <span className="value">{data.user.aboutMe || 'N/A'}</span>
+              )}
             </div>
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Save Changes</button>
-            <button type="button" onClick={handleCancel} className="ml-4 bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
-          </form>
-        ) : (
-          <>
-            <p>City: {data.user.city || 'N/A'}</p>
-            <p>Birthday: {data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : 'N/A'}</p>
-            <p>About Me: {data.user.aboutMe || 'N/A'}</p>
             {user && user.username === data.user.username && (
-              <button onClick={() => setEditable(true)} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Edit Profile</button>
+              <div className="edit-buttons mt-4">
+                {editable ? (
+                  <>
+                    <button onClick={handleUpdateProfile} className="bg-blue-500 text-white px-4 py-2 rounded">Save Changes</button>
+                    <button onClick={handleCancel} className="ml-4 bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+                  </>
+                ) : (
+                  <button onClick={() => setEditable(true)} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Edit Profile</button>
+                )}
+              </div>
             )}
-          </>
-        )}
+          </div>
+        </div>
 
-        <h2 className="text-xl font-bold mt-8 mb-4">Your Posts</h2>
-        {user && user.username === data.user.username && <CreatePost />}
-        {data.user.posts.map((post) => (
-          <Post key={post.id} post={post} />
-        ))}
+        <div className="profile-section mb-4">
+          <h2 className="text-xl font-bold mt-8 mb-4">Your Posts</h2>
+          {user && user.username === data.user.username && <CreatePost />}
+          {data.user.posts.map((post) => (
+            <Post key={post.id} post={post} />
+          ))}
+        </div>
       </div>
     </div>
   );

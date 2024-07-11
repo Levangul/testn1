@@ -9,6 +9,7 @@ export const GET_USER = gql`
       city
       birthday
       aboutMe
+      profilePicture
       posts {
         id
         text
@@ -29,7 +30,6 @@ export const GET_USER = gql`
     }
   }
 `;
-
 
 
 export const GET_POSTS = gql`
