@@ -10,6 +10,7 @@ const db = require("./config/connection");
 const multer = require("multer");
 const cors = require("cors");
 const fs = require('fs');
+const mongoose = require('mongoose');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -31,41 +32,65 @@ const startApolloServer = async () => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
 
-    // Adjust the upload directory to the client folder
-    const uploadDir = path.join(__dirname, '../client/uploads');
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir);
-    }
-
-    // Configure Multer storage
-    const storage = multer.diskStorage({
-        destination: (req, file, cb) => {
-            cb(null, uploadDir);
-        },
-        filename: (req, file, cb) => {
-            cb(null, `${Date.now()}-${file.originalname}`);
-        },
-    });
-
+    // Use memory storage for Multer
+    const storage = multer.memoryStorage();
     const upload = multer({ storage });
 
+    // Define Profile schema with image storage
+    const profileSchema = new mongoose.Schema({
+        username: String,
+        email: String,
+        profileImage: Buffer,
+        profileImageType: String,
+    });
+
+    const Profile = mongoose.model('Profile', profileSchema);
+
     // Add the upload endpoint
-    app.post('/upload', upload.single('file'), (req, res) => {
+    app.post('/upload', upload.single('file'), async (req, res) => {
         try {
             const file = req.file;
             if (!file) {
                 return res.status(400).send({ message: 'Please upload a file.' });
             }
-            const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
-            res.send({ url: fileUrl });
+    
+            const profile = await Profile.findOne({ email: req.body.email });
+            if (profile) {
+                profile.profileImage = file.buffer;
+                profile.profileImageType = file.mimetype;
+                await profile.save();
+            } else {
+                const newProfile = new Profile({
+                    username: req.body.username,
+                    email: req.body.email,
+                    profileImage: file.buffer,
+                    profileImageType: file.mimetype,
+                });
+                await newProfile.save();
+            }
+    
+            res.send({ message: 'Profile image uploaded successfully.', url: `http://localhost:3001/profile/${req.body.email}` });
         } catch (error) {
-            console.error('Error uploading file:', error); // Log the error
+            console.error('Error uploading file:', error);
             res.status(500).send({ message: 'Failed to upload file.', error });
         }
     });
+    
 
-    // Serve the uploaded files from the client directory
-    app.use('/uploads', express.static(uploadDir));
+    app.get('/profile/:email', async (req, res) => {
+        try {
+            const profile = await Profile.findOne({ email: req.params.email });
+            if (!profile || !profile.profileImage) {
+                return res.status(404).send({ message: 'Profile not found or image not uploaded.' });
+            }
+
+            res.set('Content-Type', profile.profileImageType);
+            res.send(profile.profileImage);
+        } catch (error) {
+            console.error('Error retrieving profile image:', error);
+            res.status(500).send({ message: 'Failed to retrieve profile image.', error });
+        }
+    });
 
     app.use(
         "/graphql",

@@ -98,6 +98,7 @@ const Profile = () => {
 
     const formData = new FormData();
     formData.append('file', profileImage);
+    formData.append('email', user.email); // Pass the user's email
 
     try {
       const response = await fetch('http://localhost:3001/upload', {
