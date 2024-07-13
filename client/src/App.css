@@ -159,3 +159,31 @@ button:hover {
 .read-the-docs {
   color: #888;
 }
+.search-container {
+  padding: 20px;
+  text-align: center;
+}
+
+.search-input {
+  padding: 10px;
+  width: 200px;
+  margin-right: 10px;
+}
+
+.search-button {
+  padding: 10px 20px;
+}
+
+.search-results {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.search-results div {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.search-results div:hover {
+  background-color: #f0f0f0;
+}

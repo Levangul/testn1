@@ -11,17 +11,67 @@ const multer = require("multer");
 const cors = require("cors");
 const fs = require('fs');
 const mongoose = require('mongoose');
+const http = require('http');
+const { Server } = require('socket.io');
+require('dotenv').config();
 
 const PORT = process.env.PORT || 3001;
 const app = express();
 
-const server = new ApolloServer({
+// Create an HTTP server
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: process.env.CLIENT_ORIGIN || "http://localhost:3000",
+        methods: ["GET", "POST"],
+        credentials: true,
+    }
+});
+
+// Define the message schema
+// const messageSchema = new mongoose.Schema({
+//     sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+//     receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+//     message: { type: String, required: true },
+//     timestamp: { type: Date, default: Date.now },
+// });
+
+// const Message = mongoose.model('Message', messageSchema);
+
+io.on('connection', (socket) => {
+    console.log('a user connected');
+
+    socket.on('join', ({ userId }) => {
+        socket.join(userId);
+    });
+
+    socket.on('sendMessage', async ({ senderId, receiverId, message }) => {
+        const chatMessage = new Message({
+            sender: senderId,
+            receiver: receiverId,
+            message: message,
+        });
+        await chatMessage.save();
+
+        io.to(receiverId).emit('receiveMessage', {
+            senderId,
+            message,
+            timestamp: chatMessage.timestamp,
+        });
+    });
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
+});
+
+const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
 });
 
 const startApolloServer = async () => {
-    await server.start();
+    await apolloServer.start();
 
     // Enable CORS
     app.use(cors({
@@ -46,7 +96,6 @@ const startApolloServer = async () => {
 
     const Profile = mongoose.model('Profile', profileSchema);
 
-    // Add the upload endpoint
     app.post('/upload', upload.single('file'), async (req, res) => {
         try {
             const file = req.file;
@@ -94,7 +143,7 @@ const startApolloServer = async () => {
 
     app.use(
         "/graphql",
-        expressMiddleware(server, {
+        expressMiddleware(apolloServer, {
             context: ({ req }) => authMiddleware({ req }),
         })
     );
@@ -109,7 +158,7 @@ const startApolloServer = async () => {
         resave: false,
         saveUninitialized: true,
         store: MongoStore.create({
-            mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/your_database',
+            mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/testN1',
             ttl: 60 * 15, // 15 minutes
         }),
     }));
@@ -120,8 +169,9 @@ const startApolloServer = async () => {
             res.sendFile(path.join(__dirname, "../client/dist/index.html"));
         });
     }
+
     db.once("open", () => {
-        app.listen(PORT, () => {
+        httpServer.listen(PORT, () => {
             console.log(`API server running on port ${PORT}`);
             console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
         });

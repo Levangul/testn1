@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useParams } from 'react-router-dom';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
+import ChatComponent from '../components/Chat';
 import '../css/profile.css';
 
 const Profile = () => {
@@ -23,6 +24,8 @@ const Profile = () => {
   const [aboutMe, setAboutMe] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState('');
+  const [showChat, setShowChat] = useState(false); // State to control chat visibility
+  const [receiverId, setReceiverId] = useState(null); // State to store receiver ID
 
   const [updateUserInfo] = useMutation(UPDATE_USER_INFO);
 
@@ -31,7 +34,8 @@ const Profile = () => {
       setCity(data.user.city || '');
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
-      setProfileImageUrl(data.user.profilePicture || ''); // Assuming profilePicture is a field in the user data
+      setProfileImageUrl(data.user.profilePicture || '');
+      setReceiverId(data.user._id); // Set receiver ID from profile data
     }
   }, [data]);
 
@@ -49,26 +53,17 @@ const Profile = () => {
         city: city !== '' ? city : null,
         birthday: birthday !== '' ? new Date(birthday).getTime().toString() : null,
         aboutMe: aboutMe !== '' ? aboutMe : null,
-        profilePicture: profileImageUrl, // Update with the new profile image URL
+        profilePicture: profileImageUrl,
       };
-
-      console.log('Updating profile with:', updateFields);
 
       const response = await updateUserInfo({
         variables: updateFields,
         refetchQueries: [{ query: GET_USER, variables: { username: user.username } }],
       });
 
-      console.log('Update response:', response);
       setEditable(false);
     } catch (err) {
       console.error('Error updating profile:', err);
-      if (err.graphQLErrors) {
-        console.error('GraphQL errors:', err.graphQLErrors);
-      }
-      if (err.networkError) {
-        console.error('Network error:', err.networkError);
-      }
     }
   };
 
@@ -98,7 +93,7 @@ const Profile = () => {
 
     const formData = new FormData();
     formData.append('file', profileImage);
-    formData.append('email', user.email); // Pass the user's email
+    formData.append('email', user.email);
 
     try {
       const response = await fetch('http://localhost:3001/upload', {
@@ -112,11 +107,18 @@ const Profile = () => {
       }
 
       const data = await response.json();
-      setProfileImageUrl(data.url); // Update with the uploaded image URL
+      setProfileImageUrl(data.url);
     } catch (error) {
       console.error('Error uploading image:', error);
     }
   };
+
+  const handleSendMessage = () => {
+    setShowChat(true); // Show chat component when button is clicked
+  };
+
+  console.log('Profile Data:', data);
+  console.log('Current User:', user);
 
   if (!data || !data.user) {
     return <p>Profile not found</p>;
@@ -194,6 +196,9 @@ const Profile = () => {
             )}
           </div>
         </div>
+        {user && user.username !== data.user.username && (
+          <button onClick={handleSendMessage} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Send Message</button>
+        )}
 
         <div className="profile-section mb-4">
           <h2 className="text-xl font-bold mt-8 mb-4">Your Posts</h2>
@@ -203,8 +208,12 @@ const Profile = () => {
           ))}
         </div>
       </div>
+
+      {showChat && <ChatComponent receiverId={receiverId} />} {/* Pass receiver ID to ChatComponent */}
     </div>
   );
 };
 
 export default Profile;
+
+

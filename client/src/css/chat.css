@@ -1,0 +1,29 @@
+.chat-container {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 300px;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+}
+
+.chat-container h2 {
+    margin-top: 0;
+}
+
+.chat-container input[type="text"] {
+    width: calc(100% - 20px);
+    padding: 5px;
+    margin: 5px 0;
+}
+
+.chat-container button {
+    width: 100%;
+    padding: 5px;
+}
+
+.chat-container div {
+    margin-top: 10px;
+}

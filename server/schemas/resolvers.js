@@ -1,8 +1,5 @@
+const { User, Post, Comment, Message } = require('../models');
 const { AuthenticationError } = require('apollo-server-express');
-const bcrypt = require('bcrypt');
-const User = require('../models/User');
-const Post = require('../models/Post');
-const Comment = require('../models/Comment');
 const { signToken } = require('../utils/auth');
 
 const resolvers = {
@@ -13,6 +10,14 @@ const resolvers = {
     posts: async () => await Post.find({}).sort({ date: -1 }),
     post: async (_, { id }) => await Post.findById(id),
     comments: async (_, { postId }) => await Comment.find({ post: postId }),
+    searchUser: async (_, { username }) => {
+      const users = await User.find({ username: { $regex: username, $options: 'i' } });
+      return users;
+    },
+    messages: async (_, __, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to view messages');
+      return await Message.find({ receiver: user._id }).sort({ timestamp: -1 }).populate('sender receiver');
+    },
   },
   Mutation: {
     addUser: async (parent, { username, email, password }) => {
@@ -116,6 +121,20 @@ const resolvers = {
 
       return updatedUser;
     },
+    sendMessage: async (_, { receiverId, message }, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to send messages');
+
+      const newMessage = new Message({
+        sender: user._id,
+        receiver: receiverId,
+        message,
+        timestamp: new Date().toISOString(),
+      });
+
+      await newMessage.save();
+
+      return newMessage.populate('sender receiver');
+    },
     removeComment: async (parent, { commentId }, context) => {
       if (context.user) {
         const comment = await Comment.findById(commentId);
@@ -139,6 +158,10 @@ const resolvers = {
   Comment: {
     author: async (comment) => await User.findById(comment.author),
     post: async (comment) => await Post.findById(comment.post)
+  },
+  Message: {
+    sender: async (message) => await User.findById(message.sender),
+    receiver: async (message) => await User.findById(message.receiver),
   }
 };
 
