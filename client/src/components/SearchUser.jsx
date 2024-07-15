@@ -17,7 +17,7 @@ const SearchUser = () => {
         searchUser({ variables: { username: term } });
       }
     }, 300),
-    []
+    [searchUser] // Ensure searchUser is included in dependencies
   );
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const SearchUser = () => {
       {data && data.searchUser && (
         <div className="search-results">
           {data.searchUser.map((user) => (
-            <UserCard key={user._id} user={user} onClick={handleUserClick} />
+            <UserCard key={user._id} user={user} onClick={() => handleUserClick(user.username)} />
           ))}
         </div>
       )}
@@ -54,5 +54,3 @@ const SearchUser = () => {
 };
 
 export default SearchUser;
-
-

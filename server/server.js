@@ -15,9 +15,13 @@ const http = require('http');
 const { Server } = require('socket.io');
 const User = require('./models/User');
 const Message = require('./models/Message');
+const bodyParser = require('body-parser');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
+
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {

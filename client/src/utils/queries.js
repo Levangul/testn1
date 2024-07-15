@@ -37,7 +37,7 @@ export const SEARCH_USER = gql`
       _id
       username
       profilePicture
-      city
+
     }
   }
 `;
