@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@apollo/client';
 import { GET_USER } from '../utils/queries';
 import { UPDATE_USER_INFO } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
+import { useChat } from '../context/ChatContext'; // Import the useChat hook
 import { useParams } from 'react-router-dom';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
@@ -12,6 +13,7 @@ import '../css/profile.css';
 const Profile = () => {
   const { username } = useParams();
   const { user } = useAuth();
+  const { setReceiverId } = useChat(); // Use the context to set receiverId
 
   const { loading, error, data } = useQuery(GET_USER, {
     variables: { username: username || (user ? user.username : '') },
@@ -25,7 +27,6 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [showChat, setShowChat] = useState(false);
-  const [receiverId, setReceiverId] = useState(null);
 
   const [updateUserInfo] = useMutation(UPDATE_USER_INFO);
 
@@ -35,9 +36,14 @@ const Profile = () => {
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
       setProfileImageUrl(data.user.profilePicture || '');
-      setReceiverId(data.user._id);
+      setReceiverId(data.user._id); // Set receiverId to the profile user's ID
     }
-  }, [data]);
+  }, [data, setReceiverId]);
+
+  useEffect(() => {
+    console.log('Profile Data:', data);
+    console.log('Current User:', user);
+  }, [data, user]);
 
   if (!user && !username) {
     return <p className="text-red-500">You need to log in to view profiles.</p>;
@@ -115,11 +121,8 @@ const Profile = () => {
 
   const handleSendMessage = () => {
     setShowChat(true);
-    console.log("Receiver ID:", receiverId);
+    console.log("Receiver ID:", data.user._id); // Ensure this logs correctly
   };
-
-  console.log('Profile Data:', data);
-  console.log('Current User:', user);
 
   if (!data || !data.user) {
     return <p>Profile not found</p>;
@@ -210,11 +213,9 @@ const Profile = () => {
         </div>
       </div>
 
-      {showChat && <ChatComponent receiverId={receiverId} />}
+      {showChat && <ChatComponent />}
     </div>
   );
 };
 
 export default Profile;
-
-

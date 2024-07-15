@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 import { useAuth } from "../context/AuthContext";
+import { useChat } from "../context/ChatContext"; // Import the useChat hook
 import { useMutation } from "@apollo/client";
 import { SEND_MESSAGE } from "../utils/mutations";
 import "../css/chat.css";
 
+// Access environment variables using import.meta.env
 const socket = io(import.meta.env.VITE_API_URL);
 
-const ChatComponent = ({ receiverId }) => {
+const ChatComponent = () => {
   const { user } = useAuth();
+  const { receiverId } = useChat(); // Use the context
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
   const [sendMessageMutation] = useMutation(SEND_MESSAGE);
 
   useEffect(() => {
+    console.log("ChatComponent mounted");
+    console.log("Receiver ID in ChatComponent:", receiverId); // Ensure this logs correctly
+
     if (user) {
       console.log("Joining room with userId:", user._id);
       socket.emit("join", { userId: user._id });

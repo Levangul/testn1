@@ -129,6 +129,9 @@ const resolvers = {
     sendMessage: async (_, { receiverId, message }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to send messages');
     
+      console.log("Sender ID:", user._id); // Add logs here
+      console.log("Receiver ID:", receiverId); // Add logs here
+    
       const newMessage = new Message({
         sender: user._id,
         receiver: receiverId,

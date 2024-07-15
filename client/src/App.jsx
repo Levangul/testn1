@@ -4,6 +4,7 @@ import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@ap
 import { setContext } from '@apollo/client/link/context';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
+import { ChatProvider } from './context/ChatContext';
 import Header from './components/Header';
 import SearchUser from './components/SearchUser';
 import cache from './utils/cache';
@@ -31,9 +32,11 @@ function App() {
   return (
     <ApolloProvider client={client}>
       <AuthProvider>
+        <ChatProvider>
         <Header />
         <SearchUser />
         <Outlet />
+        </ChatProvider>
       </AuthProvider>
     </ApolloProvider>
   );
