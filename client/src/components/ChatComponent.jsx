@@ -31,6 +31,7 @@ const ChatComponent = ({ receiverId }) => {
     }
 
     return () => {
+      console.log("Cleaning up socket listeners");
       socket.off("receiveMessage");
     };
   }, [user, receiverId]);
@@ -51,6 +52,7 @@ const ChatComponent = ({ receiverId }) => {
         });
         console.log("Mutation response:", data);
 
+        console.log("Emitting sendMessage event to socket");
         socket.emit("sendMessage", {
           senderId: user._id,
           receiverId: receiverId,
@@ -93,4 +95,3 @@ const ChatComponent = ({ receiverId }) => {
 };
 
 export default ChatComponent;
-
