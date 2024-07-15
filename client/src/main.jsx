@@ -7,6 +7,7 @@ import Homepage from './pages/Homepage.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import Profile from './pages/Profile.jsx';
+import Inbox from './components/Inbox.jsx'
 
 const router = createBrowserRouter([
   {
@@ -26,9 +27,14 @@ const router = createBrowserRouter([
         element: <Signup />,
       },
       {
+        path: "inbox", // Add this route
+        element: <Inbox />,
+      },
+      {
         path: "profile",
         element: <Profile />,
       },
+      
       {
         path: "user/:username",
         element: <Profile />,

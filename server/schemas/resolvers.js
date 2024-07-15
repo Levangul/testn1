@@ -16,7 +16,12 @@ const resolvers = {
     },
     messages: async (_, __, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to view messages');
-      return await Message.find({ receiver: user._id }).sort({ timestamp: -1 }).populate('sender receiver');
+      return await Message.find({ 
+        $or: [
+          { sender: user._id },
+          { receiver: user._id }
+        ]
+      }).sort({ timestamp: -1 }).populate('sender receiver');
     },
   },
   Mutation: {
@@ -123,18 +128,19 @@ const resolvers = {
     },
     sendMessage: async (_, { receiverId, message }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to send messages');
-
+    
       const newMessage = new Message({
         sender: user._id,
         receiver: receiverId,
         message,
         timestamp: new Date().toISOString(),
       });
-
+    
       await newMessage.save();
-
+    
       return newMessage.populate('sender receiver');
     },
+    
     removeComment: async (parent, { commentId }, context) => {
       if (context.user) {
         const comment = await Comment.findById(commentId);

@@ -46,6 +46,22 @@ export const ADD_POST = gql`
   }
 `;
 
+export const SEND_MESSAGE = gql`
+  mutation sendMessage($receiverId: ID!, $message: String!) {
+    sendMessage(receiverId: $receiverId, message: $message) {
+      id
+      sender {
+        username
+      }
+      receiver {
+        username
+      }
+      message
+      timestamp
+    }
+  }
+`;
+
 export const ADD_COMMENT = gql`
   mutation addComment($postId: ID!, $text: String!) {
     addComment(postId: $postId, text: $text) {

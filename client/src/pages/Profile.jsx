@@ -6,14 +6,14 @@ import { useAuth } from '../context/AuthContext';
 import { useParams } from 'react-router-dom';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
-import ChatComponent from '../components/Chat';
+import ChatComponent from '../components/ChatComponent';
 import '../css/profile.css';
 
 const Profile = () => {
   const { username } = useParams();
   const { user } = useAuth();
 
-  const { loading, error, data, refetch } = useQuery(GET_USER, {
+  const { loading, error, data } = useQuery(GET_USER, {
     variables: { username: username || (user ? user.username : '') },
     skip: !username && !user,
   });
@@ -24,8 +24,8 @@ const Profile = () => {
   const [aboutMe, setAboutMe] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState('');
-  const [showChat, setShowChat] = useState(false); // State to control chat visibility
-  const [receiverId, setReceiverId] = useState(null); // State to store receiver ID
+  const [showChat, setShowChat] = useState(false);
+  const [receiverId, setReceiverId] = useState(null);
 
   const [updateUserInfo] = useMutation(UPDATE_USER_INFO);
 
@@ -35,7 +35,7 @@ const Profile = () => {
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
       setProfileImageUrl(data.user.profilePicture || '');
-      setReceiverId(data.user._id); // Set receiver ID from profile data
+      setReceiverId(data.user._id);
     }
   }, [data]);
 
@@ -56,7 +56,7 @@ const Profile = () => {
         profilePicture: profileImageUrl,
       };
 
-      const response = await updateUserInfo({
+      await updateUserInfo({
         variables: updateFields,
         refetchQueries: [{ query: GET_USER, variables: { username: user.username } }],
       });
@@ -114,7 +114,8 @@ const Profile = () => {
   };
 
   const handleSendMessage = () => {
-    setShowChat(true); // Show chat component when button is clicked
+    setShowChat(true);
+    console.log("Receiver ID:", receiverId);
   };
 
   console.log('Profile Data:', data);
@@ -209,7 +210,7 @@ const Profile = () => {
         </div>
       </div>
 
-      {showChat && <ChatComponent receiverId={receiverId} />} {/* Pass receiver ID to ChatComponent */}
+      {showChat && <ChatComponent receiverId={receiverId} />}
     </div>
   );
 };
