@@ -31,6 +31,33 @@ export const GET_USER = gql`
   }
 `;
 
+export const SEARCH_USER = gql`
+  query searchUser($username: String!) {
+    searchUser(username: $username) {
+      _id
+      username
+      profilePicture
+
+    }
+  }
+`;
+
+export const GET_MESSAGES = gql`
+  query getMessages {
+    messages {
+      id
+      sender {
+        username
+      }
+      receiver {
+        username
+      }
+      message
+      timestamp
+    }
+  }
+`;
+
 
 export const GET_POSTS = gql`
   query getPosts {

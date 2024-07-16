@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
+import { faDoorOpen, faInbox } from '@fortawesome/free-solid-svg-icons'; // Import inbox icon
 
 const Header = () => {
   const { isAuthenticated, logout } = useAuth();
@@ -25,6 +25,11 @@ const Header = () => {
         </ul>
         {isAuthenticated ? (
           <ul className="flex space-x-4">
+            <li>
+              <Link to="/inbox" className="hover:text-gray-300">
+                <FontAwesomeIcon icon={faInbox} /> {/* Use inbox icon */}
+              </Link>
+            </li>
             <li className='logout'>
               <button onClick={handleLogout} className="hover:text-gray-300">
                 <FontAwesomeIcon icon={faDoorOpen} />

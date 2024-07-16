@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
+import { useParams } from 'react-router-dom';
 import { GET_USER } from '../utils/queries';
 import { UPDATE_USER_INFO } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
-import { useParams } from 'react-router-dom';
+import { useChat } from '../context/ChatContext';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
+import ChatComponent from '../components/ChatComponent';
 import '../css/profile.css';
 
 const Profile = () => {
   const { username } = useParams();
   const { user } = useAuth();
-
-  const { loading, error, data, refetch } = useQuery(GET_USER, {
+  const { setReceiverId } = useChat();
+  const { loading, error, data } = useQuery(GET_USER, {
     variables: { username: username || (user ? user.username : '') },
     skip: !username && !user,
   });
@@ -23,6 +25,8 @@ const Profile = () => {
   const [aboutMe, setAboutMe] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState('');
+  const [showChat, setShowChat] = useState(false);
+  const [message, setMessage] = useState('');
 
   const [updateUserInfo] = useMutation(UPDATE_USER_INFO);
 
@@ -31,44 +35,29 @@ const Profile = () => {
       setCity(data.user.city || '');
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
-      setProfileImageUrl(data.user.profilePicture || ''); // Assuming profilePicture is a field in the user data
+      setProfileImageUrl(data.user.profilePicture || '');
+      console.log('Data user:', data.user); // Log the entire user object
     }
   }, [data]);
-
-  if (!user && !username) {
-    return <p className="text-red-500">You need to log in to view profiles.</p>;
-  }
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
       const updateFields = {
-        city: city !== '' ? city : null,
-        birthday: birthday !== '' ? new Date(birthday).getTime().toString() : null,
-        aboutMe: aboutMe !== '' ? aboutMe : null,
-        profilePicture: profileImageUrl, // Update with the new profile image URL
+        city: city || null,
+        birthday: birthday ? new Date(birthday).getTime().toString() : null,
+        aboutMe: aboutMe || null,
+        profilePicture: profileImageUrl,
       };
 
-      console.log('Updating profile with:', updateFields);
-
-      const response = await updateUserInfo({
+      await updateUserInfo({
         variables: updateFields,
         refetchQueries: [{ query: GET_USER, variables: { username: user.username } }],
       });
 
-      console.log('Update response:', response);
       setEditable(false);
     } catch (err) {
       console.error('Error updating profile:', err);
-      if (err.graphQLErrors) {
-        console.error('GraphQL errors:', err.graphQLErrors);
-      }
-      if (err.networkError) {
-        console.error('Network error:', err.networkError);
-      }
     }
   };
 
@@ -98,7 +87,7 @@ const Profile = () => {
 
     const formData = new FormData();
     formData.append('file', profileImage);
-    formData.append('email', user.email); // Pass the user's email
+    formData.append('email', user.email);
 
     try {
       const response = await fetch('http://localhost:3001/upload', {
@@ -112,11 +101,28 @@ const Profile = () => {
       }
 
       const data = await response.json();
-      setProfileImageUrl(data.url); // Update with the uploaded image URL
+      setProfileImageUrl(data.url);
     } catch (error) {
       console.error('Error uploading image:', error);
     }
   };
+
+  const handleSendMessage = () => {
+    if (data && data.user && data.user.id !== user.id) { // Use 'id' instead of '_id'
+      setReceiverId(data.user.id); // Use 'id' instead of '_id'
+      console.log('Set receiverId to:', data.user.id); // Log 'id' instead of '_id'
+      setShowChat(true);
+    } else {
+      console.error('Cannot send message to self or invalid user data');
+    }
+  };
+
+  if (!user && !username) {
+    return <p className="text-red-500">You need to log in to view profiles.</p>;
+  }
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
 
   if (!data || !data.user) {
     return <p>Profile not found</p>;
@@ -194,6 +200,19 @@ const Profile = () => {
             )}
           </div>
         </div>
+        {user && user.username !== data.user.username && (
+          <div className="send-message-section mt-4">
+            <textarea
+              placeholder="Type your message here..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <button onClick={handleSendMessage} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">
+              Send Message
+            </button>
+          </div>
+        )}
 
         <div className="profile-section mb-4">
           <h2 className="text-xl font-bold mt-8 mb-4">Your Posts</h2>
@@ -203,6 +222,8 @@ const Profile = () => {
           ))}
         </div>
       </div>
+
+      {showChat && <ChatComponent />}
     </div>
   );
 };

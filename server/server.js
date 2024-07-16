@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const { ApolloServer } = require("@apollo/server");
 const { expressMiddleware } = require("@apollo/server/express4");
@@ -9,123 +10,159 @@ const { typeDefs, resolvers } = require("./schemas");
 const db = require("./config/connection");
 const multer = require("multer");
 const cors = require("cors");
-const fs = require('fs');
 const mongoose = require('mongoose');
+const http = require('http');
+const { Server } = require('socket.io');
+const User = require('./models/User');
+const Message = require('./models/Message');
+const bodyParser = require('body-parser');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
 
-const server = new ApolloServer({
-    typeDefs,
-    resolvers,
+// Configure body parser to handle large payloads
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+// CORS options
+const corsOptions = {
+  origin: process.env.CLIENT_ORIGIN || "http://localhost:3000",
+  methods: ["GET", "POST"],
+  credentials: true,
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Create HTTP server
+const httpServer = http.createServer(app);
+
+// Configure Socket.io
+const io = new Server(httpServer, {
+  cors: corsOptions,
+});
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  socket.on('join', ({ userId }) => {
+    console.log('User joined:', userId);
+    socket.join(userId);
+  });
+
+  socket.on('sendMessage', async ({ senderId, receiverId, message }) => {
+    console.log('Message received to send:', { senderId, receiverId, message });
+    try {
+      if (!receiverId) {
+        console.error('Error: receiverId is undefined');
+        return;
+      }
+
+      const chatMessage = new Message({
+        sender: senderId,
+        receiver: receiverId,
+        message: message,
+      });
+      await chatMessage.save();
+
+      const responseMessage = {
+        senderId,
+        receiverId,
+        message,
+        timestamp: chatMessage.timestamp,
+      };
+
+      console.log('Message saved, emitting to receiver and sender:', responseMessage);
+
+      io.to(receiverId).emit('receiveMessage', responseMessage);
+      io.to(senderId).emit('receiveMessage', responseMessage);
+    } catch (error) {
+      console.error('Error in sendMessage event:', error);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+// Configure Apollo Server
+const apolloServer = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: ({ req }) => authMiddleware({ req }),
 });
 
 const startApolloServer = async () => {
-    await server.start();
+  try {
+    await apolloServer.start();
 
-    // Enable CORS
-    app.use(cors({
-        origin: "http://localhost:3000", // Adjust this to your client's origin
-        credentials: true
-    }));
+    app.use(
+      "/graphql",
+      expressMiddleware(apolloServer, {
+        context: ({ req }) => authMiddleware({ req }),
+      })
+    );
 
-    app.use(express.urlencoded({ extended: false }));
-    app.use(express.json());
-
-    // Use memory storage for Multer
+    // Configure multer for file uploads
     const storage = multer.memoryStorage();
     const upload = multer({ storage });
 
-    // Define Profile schema with image storage
-    const profileSchema = new mongoose.Schema({
-        username: String,
-        email: String,
-        profileImage: Buffer,
-        profileImageType: String,
-    });
-
-    const Profile = mongoose.model('Profile', profileSchema);
-
-    // Add the upload endpoint
     app.post('/upload', upload.single('file'), async (req, res) => {
-        try {
-            const file = req.file;
-            if (!file) {
-                return res.status(400).send({ message: 'Please upload a file.' });
-            }
-    
-            const profile = await Profile.findOne({ email: req.body.email });
-            if (profile) {
-                profile.profileImage = file.buffer;
-                profile.profileImageType = file.mimetype;
-                await profile.save();
-            } else {
-                const newProfile = new Profile({
-                    username: req.body.username,
-                    email: req.body.email,
-                    profileImage: file.buffer,
-                    profileImageType: file.mimetype,
-                });
-                await newProfile.save();
-            }
-    
-            res.send({ message: 'Profile image uploaded successfully.', url: `http://localhost:3001/profile/${req.body.email}` });
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            res.status(500).send({ message: 'Failed to upload file.', error });
+      try {
+        const file = req.file;
+        if (!file) {
+          return res.status(400).send({ message: 'Please upload a file.' });
         }
-    });
-    
 
-    app.get('/profile/:email', async (req, res) => {
-        try {
-            const profile = await Profile.findOne({ email: req.params.email });
-            if (!profile || !profile.profileImage) {
-                return res.status(404).send({ message: 'Profile not found or image not uploaded.' });
-            }
-
-            res.set('Content-Type', profile.profileImageType);
-            res.send(profile.profileImage);
-        } catch (error) {
-            console.error('Error retrieving profile image:', error);
-            res.status(500).send({ message: 'Failed to retrieve profile image.', error });
+        const user = await User.findOne({ email: req.body.email });
+        if (user) {
+          user.profilePicture = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+          await user.save();
+        } else {
+          return res.status(404).send({ message: 'User not found.' });
         }
+
+        res.send({ message: 'Profile image uploaded successfully.', profilePicture: user.profilePicture });
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        res.status(500).send({ message: 'Failed to upload file.', error });
+      }
     });
 
-    app.use(
-        "/graphql",
-        expressMiddleware(server, {
-            context: ({ req }) => authMiddleware({ req }),
-        })
-    );
-
+    // Configure session
     app.use(session({
-        secret: process.env.SESSION_SECRET || 'your_secret_key',
-        cookie: {
-            maxAge: 1000 * 60 * 15, // 15 minutes
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-        },
-        resave: false,
-        saveUninitialized: true,
-        store: MongoStore.create({
-            mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/your_database',
-            ttl: 60 * 15, // 15 minutes
-        }),
+      secret: process.env.SESSION_SECRET,
+      cookie: {
+        maxAge: 1000 * 60 * 15, // 15 minutes
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+      },
+      resave: false,
+      saveUninitialized: true,
+      store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        ttl: 60 * 15, // 15 minutes
+      }),
     }));
 
+    // Serve static assets in production
     if (process.env.NODE_ENV === "production") {
-        app.use(express.static(path.join(__dirname, "../client/dist")));
-        app.get("*", (req, res) => {
-            res.sendFile(path.join(__dirname, "../client/dist/index.html"));
-        });
+      app.use(express.static(path.join(__dirname, "../client/dist")));
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+      });
     }
+
     db.once("open", () => {
-        app.listen(PORT, () => {
-            console.log(`API server running on port ${PORT}`);
-            console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
-        });
+      httpServer.listen(PORT, () => {
+        console.log(`API server running on port ${PORT}`);
+        console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+      });
     });
+  } catch (error) {
+    console.error('Error starting Apollo Server:', error);
+  }
 };
 
 startApolloServer();
