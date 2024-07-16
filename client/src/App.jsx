@@ -29,6 +29,16 @@ const client = new ApolloClient({
 });
 
 function App() {
+  // const [loading, setLoading] = useState(true);
+
+  // useEffect(() => {
+  //   // Simulate an async action, after which the loading state is set to false
+  //   setTimeout(() => setLoading(false), 1000);
+  // }, []);
+
+  // if (loading) {
+  //   return <Spinner />; // Your loading spinner component
+  // }
   return (
     <ApolloProvider client={client}>
       <AuthProvider>

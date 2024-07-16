@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
+import { useParams } from 'react-router-dom';
 import { GET_USER } from '../utils/queries';
 import { UPDATE_USER_INFO } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
-import { useChat } from '../context/ChatContext'; // Import the useChat hook
-import { useParams } from 'react-router-dom';
+import { useChat } from '../context/ChatContext';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
 import ChatComponent from '../components/ChatComponent';
@@ -13,8 +13,7 @@ import '../css/profile.css';
 const Profile = () => {
   const { username } = useParams();
   const { user } = useAuth();
-  const { setReceiverId } = useChat(); // Use the context to set receiverId
-
+  const { setReceiverId } = useChat();
   const { loading, error, data } = useQuery(GET_USER, {
     variables: { username: username || (user ? user.username : '') },
     skip: !username && !user,
@@ -27,6 +26,7 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [showChat, setShowChat] = useState(false);
+  const [message, setMessage] = useState('');
 
   const [updateUserInfo] = useMutation(UPDATE_USER_INFO);
 
@@ -36,29 +36,17 @@ const Profile = () => {
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
       setProfileImageUrl(data.user.profilePicture || '');
-      setReceiverId(data.user._id); // Set receiverId to the profile user's ID
+      console.log('Data user:', data.user); // Log the entire user object
     }
-  }, [data, setReceiverId]);
-
-  useEffect(() => {
-    console.log('Profile Data:', data);
-    console.log('Current User:', user);
-  }, [data, user]);
-
-  if (!user && !username) {
-    return <p className="text-red-500">You need to log in to view profiles.</p>;
-  }
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  }, [data]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
       const updateFields = {
-        city: city !== '' ? city : null,
-        birthday: birthday !== '' ? new Date(birthday).getTime().toString() : null,
-        aboutMe: aboutMe !== '' ? aboutMe : null,
+        city: city || null,
+        birthday: birthday ? new Date(birthday).getTime().toString() : null,
+        aboutMe: aboutMe || null,
         profilePicture: profileImageUrl,
       };
 
@@ -120,9 +108,21 @@ const Profile = () => {
   };
 
   const handleSendMessage = () => {
-    setShowChat(true);
-    console.log("Receiver ID:", data.user._id); // Ensure this logs correctly
+    if (data && data.user && data.user.id !== user.id) { // Use 'id' instead of '_id'
+      setReceiverId(data.user.id); // Use 'id' instead of '_id'
+      console.log('Set receiverId to:', data.user.id); // Log 'id' instead of '_id'
+      setShowChat(true);
+    } else {
+      console.error('Cannot send message to self or invalid user data');
+    }
   };
+
+  if (!user && !username) {
+    return <p className="text-red-500">You need to log in to view profiles.</p>;
+  }
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
 
   if (!data || !data.user) {
     return <p>Profile not found</p>;
@@ -201,7 +201,17 @@ const Profile = () => {
           </div>
         </div>
         {user && user.username !== data.user.username && (
-          <button onClick={handleSendMessage} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Send Message</button>
+          <div className="send-message-section mt-4">
+            <textarea
+              placeholder="Type your message here..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <button onClick={handleSendMessage} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">
+              Send Message
+            </button>
+          </div>
         )}
 
         <div className="profile-section mb-4">

@@ -26,8 +26,8 @@ const Header = () => {
         {isAuthenticated ? (
           <ul className="flex space-x-4">
             <li>
-              <Link to="/inbox" className="hover:text-gray-300"> {/* Add inbox link */}
-                <FontAwesomeIcon icon={faInbox} />
+              <Link to="/inbox" className="hover:text-gray-300">
+                <FontAwesomeIcon icon={faInbox} /> {/* Use inbox icon */}
               </Link>
             </li>
             <li className='logout'>
