@@ -36,7 +36,7 @@ const Profile = () => {
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
       setProfileImageUrl(data.user.profilePicture || '');
-      console.log('Data user:', data.user); // Log the entire user object
+      console.log('Data user:', data.user); 
     }
   }, [data]);
 

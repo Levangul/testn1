@@ -8,6 +8,7 @@ import { ChatProvider } from './context/ChatContext';
 import Header from './components/Header';
 import SearchUser from './components/SearchUser';
 import cache from './utils/cache';
+// import { Spinner } from './components/Spinner'
 
 const httpLink = createHttpLink({
   uri: 'http://localhost:3001/graphql', 
@@ -32,12 +33,12 @@ function App() {
   // const [loading, setLoading] = useState(true);
 
   // useEffect(() => {
-  //   // Simulate an async action, after which the loading state is set to false
+    
   //   setTimeout(() => setLoading(false), 1000);
   // }, []);
 
   // if (loading) {
-  //   return <Spinner />; // Your loading spinner component
+  //   return <Spinner />; 
   // }
   return (
     <ApolloProvider client={client}>
