@@ -66,6 +66,7 @@ io.on('connection', (socket) => {
       await chatMessage.save();
 
       const responseMessage = {
+        id: chatMessage.id,
         senderId,
         receiverId,
         message,
@@ -85,6 +86,7 @@ io.on('connection', (socket) => {
     console.log('User disconnected');
   });
 });
+
 
 // Configure Apollo Server
 const apolloServer = new ApolloServer({

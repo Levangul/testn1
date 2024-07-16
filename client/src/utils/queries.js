@@ -47,9 +47,11 @@ export const GET_MESSAGES = gql`
     messages {
       id
       sender {
+        id
         username
       }
       receiver {
+        id
         username
       }
       message

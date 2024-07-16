@@ -1,0 +1,29 @@
+.chat-thread {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .message-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .message {
+    margin-bottom: 10px;
+  }
+  
+  .message p {
+    margin: 0;
+  }
+  
+  .message small {
+    color: #999;
+  }
+  
+  button {
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  
