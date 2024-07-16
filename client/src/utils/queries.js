@@ -34,7 +34,7 @@ export const GET_USER = gql`
 export const SEARCH_USER = gql`
   query searchUser($username: String!) {
     searchUser(username: $username) {
-      _id
+      id
       username
       profilePicture
 

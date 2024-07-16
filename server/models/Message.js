@@ -7,6 +7,16 @@ const messageSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now },
 });
 
+
+messageSchema.virtual('id').get(function() {
+    return this._id.toHexString();
+});
+
+
+messageSchema.set('toJSON', {
+    virtuals: true,
+});
+
 const Message = mongoose.model('Message', messageSchema);
 
 module.exports = Message;
