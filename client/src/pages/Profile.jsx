@@ -155,7 +155,7 @@ const Profile = () => {
           )}
         </div>
         <div className="profile-section mb-4">
-          <h1 className="text-2xl font-bold mb-4">{data.user.name} {data.user.lastname}'s Profile</h1>
+          <h1 className="text-2xl font-bold mb-4">{data.user.name} {data.user.lastname}</h1>
           <div className="profile-info">
             <div className="info-item">
               <span className="label">City:</span>

@@ -4,7 +4,7 @@ import { GET_MESSAGES } from "../utils/queries";
 import { useAuth } from "../context/AuthContext";
 import ChatThread from "./ChatThread";
 import io from 'socket.io-client';
-import '../css/inbox.css'; // Make sure to import the CSS file
+import '../css/inbox.css';
 
 const socket = io(import.meta.env.VITE_API_URL);
 

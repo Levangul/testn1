@@ -15,10 +15,10 @@ const SearchUser = () => {
       if (term.trim()) {
         console.log(`Searching for: ${term}`);
         const [name, lastname] = term.split(' ');
-        searchUser({ variables: { name, lastname } });
+        searchUser({ variables: { name, lastname: lastname || "" } });
       }
     }, 300),
-    [searchUser] 
+    [searchUser]
   );
 
   useEffect(() => {
@@ -55,4 +55,3 @@ const SearchUser = () => {
 };
 
 export default SearchUser;
-
