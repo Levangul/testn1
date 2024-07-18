@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import '../css/usercard.css'
 
 const UserCard = ({ user, onClick }) => {
   return (

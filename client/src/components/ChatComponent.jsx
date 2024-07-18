@@ -39,7 +39,7 @@ const ChatComponent = () => {
       socket.emit('join', { userId: user.id });
       console.log("User joined socket with ID:", user.id);
 
-      socket.on('receiveMessage', (newMessage) => {
+      const handleReceiveMessage = (newMessage) => {
         if (
           (newMessage.senderId === receiverId && newMessage.receiverId === user.id) ||
           (newMessage.senderId === user.id && newMessage.receiverId === receiverId)
@@ -54,12 +54,14 @@ const ChatComponent = () => {
           });
           console.log("Received message:", newMessage);
         }
-      });
-    }
+      };
 
-    return () => {
-      socket.off('receiveMessage');
-    };
+      socket.on('receiveMessage', handleReceiveMessage);
+
+      return () => {
+        socket.off('receiveMessage', handleReceiveMessage);
+      };
+    }
   }, [user, receiverId]);
 
   const sendMessage = async () => {
@@ -127,3 +129,4 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
+
