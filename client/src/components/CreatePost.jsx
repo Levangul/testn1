@@ -22,11 +22,11 @@ const CreatePost = () => {
       }
 
       // Update GET_USER cache
-      const existingUser = cache.readQuery({ query: GET_USER, variables: { username: user.username } });
+      const existingUser = cache.readQuery({ query: GET_USER, variables: { name: user.name, lastname: user.lastname } });
       if (existingUser) {
         cache.writeQuery({
           query: GET_USER,
-          variables: { username: user.username },
+          variables: { name: user.name, lastname: user.lastname },
           data: {
             user: {
               ...existingUser.user,
@@ -63,4 +63,3 @@ const CreatePost = () => {
 };
 
 export default CreatePost;
-

@@ -26,6 +26,10 @@ const ChatComponent = () => {
           (msg.sender.id === user.id && msg.receiver.id === receiverId) ||
           (msg.sender.id === receiverId && msg.receiver.id === user.id)
       );
+
+      // Sort messages by timestamp
+      filteredMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
       setMessages(filteredMessages);
     }
   }, [data, user.id, receiverId]);
@@ -41,10 +45,12 @@ const ChatComponent = () => {
           (newMessage.senderId === user.id && newMessage.receiverId === receiverId)
         ) {
           setMessages((prevMessages) => {
-            if (!prevMessages.find((msg) => msg.id === newMessage.id)) {
-              return [...prevMessages, newMessage];
-            }
-            return prevMessages;
+            const updatedMessages = [...prevMessages, newMessage];
+
+            // Sort messages by timestamp
+            updatedMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            return updatedMessages;
           });
           console.log("Received message:", newMessage);
         }
@@ -74,7 +80,14 @@ const ChatComponent = () => {
 
         socket.emit('sendMessage', newMessage);
 
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        setMessages((prevMessages) => {
+          const updatedMessages = [...prevMessages, newMessage];
+
+          // Sort messages by timestamp
+          updatedMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+          return updatedMessages;
+        });
         setMessage('');
         console.log("Message sent:", newMessage);
       } catch (error) {
@@ -96,7 +109,7 @@ const ChatComponent = () => {
       <div className="chat-messages">
         {messages.map((msg) => (
           <div key={msg.id}>
-            <strong>{msg.senderId === user.id ? 'You' : msg.sender.username}</strong>: {msg.message}
+            <strong>{msg.senderId === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
           </div>
         ))}
       </div>

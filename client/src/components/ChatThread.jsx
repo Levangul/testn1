@@ -2,10 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useMutation } from "@apollo/client";
 import { SEND_MESSAGE } from "../utils/mutations";
 import { useAuth } from "../context/AuthContext";
-import io from 'socket.io-client';
-import '../css/chatThread.css';
-
-const socket = io(import.meta.env.VITE_API_URL);
+import '../css/chatThread.css'; // Make sure to import the CSS file
 
 const ChatThread = ({ thread, onBack }) => {
   const { user } = useAuth();
@@ -13,32 +10,10 @@ const ChatThread = ({ thread, onBack }) => {
   const [messages, setMessages] = useState(thread.messages);
   const [sendMessageMutation] = useMutation(SEND_MESSAGE);
 
+  // Update messages when the thread changes
   useEffect(() => {
     setMessages(thread.messages);
   }, [thread]);
-
-  useEffect(() => {
-    if (user) {
-      socket.emit('join', { userId: user.id });
-      console.log("User joined socket with ID:", user.id);
-
-      socket.on('receiveMessage', (newMessage) => {
-        if (newMessage.senderId === thread.user.id || newMessage.receiverId === user.id) {
-          setMessages((prevMessages) => {
-            if (!prevMessages.find((msg) => msg.id === newMessage.id)) {
-              return [...prevMessages, newMessage];
-            }
-            return prevMessages;
-          });
-          console.log("Received message:", newMessage);
-        }
-      });
-    }
-
-    return () => {
-      socket.off('receiveMessage');
-    };
-  }, [user, thread]);
 
   const sendMessage = async () => {
     if (message.trim()) {
@@ -55,11 +30,8 @@ const ChatThread = ({ thread, onBack }) => {
           timestamp: data.sendMessage.timestamp,
         };
 
-        socket.emit('sendMessage', newMessage);
-
         setMessages((prevMessages) => [...prevMessages, newMessage]);
         setMessage('');
-        console.log("Message sent:", newMessage);
       } catch (error) {
         console.error('Error sending message:', error);
       }
@@ -69,12 +41,12 @@ const ChatThread = ({ thread, onBack }) => {
   return (
     <div className="chat-thread">
       <button onClick={onBack}>Back to Inbox</button>
-      <h3>Chat with {thread.user.username}</h3>
+      <h3>Chat with {thread.user.name} {thread.user.lastname}</h3>
       <div className="message-list">
         {messages.map((msg) => (
           <div key={msg.id} className="message">
             <p>
-              <strong>{msg.sender.id === user.id ? 'You' : msg.sender.username}</strong>: {msg.message}
+              <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
             </p>
             <p>
               <small>{new Date(msg.timestamp).toLocaleString()}</small>
@@ -96,5 +68,3 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
-
-

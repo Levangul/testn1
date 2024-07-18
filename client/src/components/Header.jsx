@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDoorOpen, faInbox } from '@fortawesome/free-solid-svg-icons'; // Import inbox icon
 
 const Header = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -21,7 +21,13 @@ const Header = () => {
         </div>
         <ul className="flex space-x-4">
           <li><Link to="/" className="hover:text-gray-300">Home</Link></li>
-          <li><Link to="/profile" className="hover:text-gray-300">Profile</Link></li>
+          {isAuthenticated && user && (
+            <li>
+              <Link to={`/user/${user.name}/${user.lastname}`} className="hover:text-gray-300">
+                Profile
+              </Link>
+            </li>
+          )}
         </ul>
         {isAuthenticated ? (
           <ul className="flex space-x-4">
@@ -48,3 +54,5 @@ const Header = () => {
 };
 
 export default Header;
+
+

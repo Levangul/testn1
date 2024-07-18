@@ -6,23 +6,27 @@ export const LOGIN_USER = gql`
       token
       user {
         id
-        username
+        name
+        lastname
       }
     }
   }
 `;
 
+
 export const SIGNUP_USER = gql`
-  mutation addUser($username: String!, $email: String!, $password: String!) {
-    addUser(username: $username, email: $email, password: $password) {
+  mutation addUser($name: String!, $lastname: String!, $email: String!, $password: String!) {
+    addUser(name: $name, lastname: $lastname, email: $email, password: $password) {
       token
       user {
         id
-        username
+        name
+        lastname
       }
     }
   }
 `;
+
 
 export const ADD_POST = gql`
   mutation addPost($text: String!) {
@@ -32,35 +36,43 @@ export const ADD_POST = gql`
       date
       author {
         id
-        username
+        name
+        lastname
       }
       comments {
         id
         text
         author {
           id
-          username
+          name
+          lastname
         }
       }
     }
   }
 `;
 
+
 export const SEND_MESSAGE = gql`
   mutation sendMessage($receiverId: ID!, $message: String!) {
     sendMessage(receiverId: $receiverId, message: $message) {
       id
       sender {
-        username
+        id
+        name
+        lastname
       }
       receiver {
-        username
+        id
+        name
+        lastname
       }
       message
       timestamp
     }
   }
 `;
+
 
 export const ADD_COMMENT = gql`
   mutation addComment($postId: ID!, $text: String!) {
@@ -69,7 +81,8 @@ export const ADD_COMMENT = gql`
       text
       author {
         id
-        username
+        name
+        lastname
       }
       post {
         id
@@ -78,14 +91,15 @@ export const ADD_COMMENT = gql`
   }
 `;
 
+
 export const REMOVE_POST = gql`
   mutation removePost($postId: ID!) {
-  removePost(postId: $postId) {
-    id
+    removePost(postId: $postId) {
+      id
+    }
   }
-}
-  
 `;
+
 
 export const REMOVE_COMMENT = gql`
   mutation removeComment($commentId: ID!) {
@@ -94,7 +108,8 @@ export const REMOVE_COMMENT = gql`
       text
       author {
         id
-        username
+        name
+        lastname
       }
       post {
         id
@@ -103,11 +118,13 @@ export const REMOVE_COMMENT = gql`
   }
 `;
 
+
 export const UPDATE_USER_INFO = gql`
   mutation updateUserInfo($city: String, $birthday: String, $aboutMe: String, $profilePicture: String) {
     updateUserInfo(city: $city, birthday: $birthday, aboutMe: $aboutMe, profilePicture: $profilePicture) {
       id
-      username
+      name
+      lastname
       city
       birthday
       aboutMe

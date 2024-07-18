@@ -11,7 +11,12 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("id_token");
     if (token) {
       const decoded = decode(token);
-      setUser({ ...decoded.data, id: decoded.data._id });
+      setUser({
+        id: decoded.data._id,
+        email: decoded.data.email,
+        name: decoded.data.name,
+        lastname: decoded.data.lastname,
+      });
     }
   }, []);
 
@@ -23,7 +28,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("id_token", token);
     setIsAuthenticated(true);
     const decoded = decode(token);
-    setUser({ ...decoded.data, id: decoded.data._id });
+    setUser({
+      id: decoded.data._id,
+      email: decoded.data.email,
+      name: decoded.data.name,
+      lastname: decoded.data.lastname,
+    });
   };
 
   const logout = () => {

@@ -43,10 +43,10 @@ const io = new Server(httpServer, {
 });
 
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  console.log('A user connected:', socket.id);
 
   socket.on('join', ({ userId }) => {
-    console.log('User joined:', userId);
+    console.log('User joined:', userId, 'with socket id:', socket.id);
     socket.join(userId);
   });
 
@@ -83,7 +83,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected');
+    console.log('User disconnected:', socket.id);
   });
 });
 

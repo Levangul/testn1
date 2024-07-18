@@ -5,13 +5,16 @@ const { signToken } = require('../utils/auth');
 const resolvers = {
   Query: {
     users: async () => await User.find({}),
-    user: async (_, { username }) => await User.findOne({ username }),
+    user: async (_, { name, lastname }) => await User.findOne({ name, lastname }),
     userById: async (_, { id }) => await User.findById(id),
     posts: async () => await Post.find({}).sort({ date: -1 }),
     post: async (_, { id }) => await Post.findById(id),
     comments: async (_, { postId }) => await Comment.find({ post: postId }),
-    searchUser: async (_, { username }) => {
-      const users = await User.find({ username: { $regex: username, $options: 'i' } });
+    searchUser: async (_, { name, lastname }) => {
+      const users = await User.find({
+        name: { $regex: name, $options: 'i' },
+        lastname: { $regex: lastname, $options: 'i' },
+      });
       return users;
     },
     messages: async (_, __, { user }) => {
@@ -25,16 +28,13 @@ const resolvers = {
     },
   },
   Mutation: {
-    addUser: async (parent, { username, email, password }) => {
+    addUser: async (parent, { name, lastname, email, password }) => {
       try {
-        const user = await User.create({ username, email, password });
-        const token = signToken(user);
+        const user = await User.create({ name, lastname, email, password });
+        const token = signToken({ email: user.email, name: user.name, lastname: user.lastname, _id: user._id });
         return { token, user };
       } catch (err) {
         if (err.code === 11000) {
-          if (err.keyValue.username) {
-            throw new AuthenticationError("Username already exists. Please choose another one.");
-          }
           if (err.keyValue.email) {
             throw new AuthenticationError("Email already exists. Please choose another one.");
           }
@@ -55,7 +55,7 @@ const resolvers = {
         throw new AuthenticationError("Incorrect password");
       }
 
-      const token = signToken(user);
+      const token = signToken({ email: user.email, name: user.name, lastname: user.lastname, _id: user._id });
 
       return { token, user };
     },
@@ -129,8 +129,8 @@ const resolvers = {
     sendMessage: async (_, { receiverId, message }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to send messages');
     
-      console.log("Sender ID:", user._id); // Add logs here
-      console.log("Receiver ID:", receiverId); // Add logs here
+      console.log("Sender ID:", user._id); 
+      console.log("Receiver ID:", receiverId); 
     
       const newMessage = new Message({
         sender: user._id,
@@ -175,3 +175,4 @@ const resolvers = {
 };
 
 module.exports = resolvers;
+

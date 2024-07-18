@@ -6,7 +6,6 @@ const expiration = "2h";
 module.exports = {
  
   authMiddleware: function ({ req }) {
-  
     let token = req.body.token || req.query.token || req.headers.authorization;
 
     if (req.headers.authorization) {
@@ -27,9 +26,8 @@ module.exports = {
     return req; 
   },
 
-
-  signToken: function ({ email, username, _id }) {
-    const payload = { email, username, _id }; 
+  signToken: function ({ email, name, lastname, _id }) {
+    const payload = { email, name, lastname, _id }; 
     return jwt.sign({ data: payload }, secret, { expiresIn: expiration });
   },
 };

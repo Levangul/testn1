@@ -11,12 +11,23 @@ import ChatComponent from '../components/ChatComponent';
 import '../css/profile.css';
 
 const Profile = () => {
-  const { username } = useParams();
+  const { name, lastname } = useParams();
   const { user } = useAuth();
   const { setReceiverId } = useChat();
+  
+  useEffect(() => {
+    console.log("Params:", name, lastname);
+    console.log("Auth User:", user);
+  }, [name, lastname, user]);
+
+  const shouldSkipQuery = (!name && !lastname) && !user;
+
   const { loading, error, data } = useQuery(GET_USER, {
-    variables: { username: username || (user ? user.username : '') },
-    skip: !username && !user,
+    variables: { 
+      name: name || user?.name, 
+      lastname: lastname || user?.lastname 
+    },
+    skip: shouldSkipQuery,
   });
 
   const [editable, setEditable] = useState(false);
@@ -36,7 +47,6 @@ const Profile = () => {
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
       setProfileImageUrl(data.user.profilePicture || '');
-      console.log('Data user:', data.user); 
     }
   }, [data]);
 
@@ -52,7 +62,7 @@ const Profile = () => {
 
       await updateUserInfo({
         variables: updateFields,
-        refetchQueries: [{ query: GET_USER, variables: { username: user.username } }],
+        refetchQueries: [{ query: GET_USER, variables: { name: user.name, lastname: user.lastname } }],
       });
 
       setEditable(false);
@@ -110,14 +120,13 @@ const Profile = () => {
   const handleSendMessage = () => {
     if (data && data.user && data.user.id !== user.id) { // Use 'id' instead of '_id'
       setReceiverId(data.user.id); // Use 'id' instead of '_id'
-      console.log('Set receiverId to:', data.user.id); // Log 'id' instead of '_id'
       setShowChat(true);
     } else {
       console.error('Cannot send message to self or invalid user data');
     }
   };
 
-  if (!user && !username) {
+  if (!user && !name && !lastname) {
     return <p className="text-red-500">You need to log in to view profiles.</p>;
   }
 
@@ -146,7 +155,7 @@ const Profile = () => {
           )}
         </div>
         <div className="profile-section mb-4">
-          <h1 className="text-2xl font-bold mb-4">{data.user.username}'s Profile</h1>
+          <h1 className="text-2xl font-bold mb-4">{data.user.name} {data.user.lastname}'s Profile</h1>
           <div className="profile-info">
             <div className="info-item">
               <span className="label">City:</span>
@@ -186,7 +195,7 @@ const Profile = () => {
                 <span className="value">{data.user.aboutMe || 'N/A'}</span>
               )}
             </div>
-            {user && user.username === data.user.username && (
+            {user && user.name === data.user.name && user.lastname === data.user.lastname && (
               <div className="edit-buttons mt-4">
                 {editable ? (
                   <>
@@ -200,7 +209,7 @@ const Profile = () => {
             )}
           </div>
         </div>
-        {user && user.username !== data.user.username && (
+        {user && (user.name !== data.user.name || user.lastname !== data.user.lastname) && (
           <div className="send-message-section mt-4">
             <textarea
               placeholder="Type your message here..."
@@ -216,7 +225,7 @@ const Profile = () => {
 
         <div className="profile-section mb-4">
           <h2 className="text-xl font-bold mt-8 mb-4">Your Posts</h2>
-          {user && user.username === data.user.username && <CreatePost />}
+          {user && user.name === data.user.name && user.lastname === data.user.lastname && <CreatePost />}
           {data.user.posts.map((post) => (
             <Post key={post.id} post={post} />
           ))}
@@ -229,3 +238,4 @@ const Profile = () => {
 };
 
 export default Profile;
+
