@@ -5,10 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Signup = () => {
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', lastname: '', email: '', password: '' });
   const [signup, { loading, error }] = useMutation(SIGNUP_USER);
   const navigate = useNavigate();
-  const { login, isAuthenticated  } = useAuth();
+  const { login, isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -39,11 +39,22 @@ const Signup = () => {
       <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
       <form onSubmit={handleSubmit} className="bg-white shadow-md rounded p-4">
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Username:</label>
+          <label className="block text-sm font-medium text-gray-700">First Name:</label>
           <input
             type="text"
-            name="username"
-            value={formData.username}
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Last Name:</label>
+          <input
+            type="text"
+            name="lastname"
+            value={formData.lastname}
             onChange={handleChange}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required

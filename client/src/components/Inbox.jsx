@@ -1,34 +1,32 @@
-import React, { useState } from "react";
-import { useQuery } from "@apollo/client";
-import { GET_MESSAGES } from "../utils/queries";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useChat } from "../context/ChatContext";
 import ChatThread from "./ChatThread";
-import '../css/inbox.css'; // Make sure to import the CSS file
+import '../css/inbox.css';
 
 const Inbox = () => {
   const { user } = useAuth();
-  const { loading, error, data } = useQuery(GET_MESSAGES);
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const { receiverId, threads, loading, error, refetch } = useChat();
+  const [selectedUserId, setSelectedUserId] = useState(receiverId);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
-
-  // Group messages by the other user
-  const threads = {};
-  data.messages.forEach((msg) => {
-    const otherUser = msg.sender.id === user.id ? msg.receiver : msg.sender;
-    if (!threads[otherUser.id]) {
-      threads[otherUser.id] = {
-        user: otherUser,
-        messages: [],
-      };
+  useEffect(() => {
+    if (user) {
+      refetch(); // Fetch threads when the component mounts and user is available
     }
-    threads[otherUser.id].messages.push(msg);
-  });
+  }, [user, refetch]);
 
   const handleUserClick = (userId) => {
     setSelectedUserId(userId);
   };
+
+  useEffect(() => {
+    setSelectedUserId(receiverId);
+  }, [receiverId]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  const selectedThread = threads[selectedUserId];
 
   return (
     <div className="inbox-container">
@@ -37,13 +35,13 @@ const Inbox = () => {
         {Object.keys(threads).length === 0 && <p>No messages</p>}
         {Object.values(threads).map((thread) => (
           <div key={thread.user.id} className="user-item" onClick={() => handleUserClick(thread.user.id)}>
-            <p>{thread.user.username}</p>
+            <p>{thread.user.name} {thread.user.lastname}</p>
           </div>
         ))}
       </div>
       <div className="chat-area">
-        {selectedUserId ? (
-          <ChatThread thread={threads[selectedUserId]} onBack={() => setSelectedUserId(null)} />
+        {selectedThread ? (
+          <ChatThread thread={selectedThread} onBack={() => setSelectedUserId(null)} />
         ) : (
           <p>Select a user to view the chat</p>
         )}
@@ -53,3 +51,4 @@ const Inbox = () => {
 };
 
 export default Inbox;
+

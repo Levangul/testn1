@@ -8,7 +8,6 @@ import { ChatProvider } from './context/ChatContext';
 import Header from './components/Header';
 import SearchUser from './components/SearchUser';
 import cache from './utils/cache';
-// import { Spinner } from './components/Spinner'
 
 const httpLink = createHttpLink({
   uri: 'http://localhost:3001/graphql', 
@@ -30,23 +29,13 @@ const client = new ApolloClient({
 });
 
 function App() {
-  // const [loading, setLoading] = useState(true);
-
-  // useEffect(() => {
-    
-  //   setTimeout(() => setLoading(false), 1000);
-  // }, []);
-
-  // if (loading) {
-  //   return <Spinner />; 
-  // }
   return (
     <ApolloProvider client={client}>
       <AuthProvider>
         <ChatProvider>
-        <Header />
-        <SearchUser />
-        <Outlet />
+          <Header />
+          <SearchUser />
+          <Outlet />
         </ChatProvider>
       </AuthProvider>
     </ApolloProvider>

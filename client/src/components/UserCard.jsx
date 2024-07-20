@@ -1,16 +1,17 @@
 import React from "react";
 import PropTypes from "prop-types";
+import '../css/usercard.css'
 
 const UserCard = ({ user, onClick }) => {
   return (
-    <div className="user-card" onClick={() => onClick(user.username)}>
+    <div className="user-card" onClick={() => onClick(user.name, user.lastname)}>
       <img
         src={user.profilePicture || "https://via.placeholder.com/150"}
-        alt={user.username}
+        alt={`${user.name} ${user.lastname}`}
         className="user-card-image"
       />
       <div className="user-card-info">
-        <h3>{user.username}</h3>
+        <h3>{user.name} {user.lastname}</h3>
         <p>{user.city}</p>
       </div>
     </div>

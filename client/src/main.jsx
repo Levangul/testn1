@@ -7,7 +7,7 @@ import Homepage from './pages/Homepage.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import Profile from './pages/Profile.jsx';
-import Inbox from './components/Inbox.jsx'
+import Inbox from './components/Inbox.jsx';
 
 const router = createBrowserRouter([
   {
@@ -34,9 +34,8 @@ const router = createBrowserRouter([
         path: "profile",
         element: <Profile />,
       },
-      
       {
-        path: "user/:username",
+        path: "user/:name/:lastname",
         element: <Profile />,
       },
     ],
@@ -46,3 +45,5 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <RouterProvider router={router} />
 );
+
+

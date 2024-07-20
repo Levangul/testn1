@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useChat } from '../context/ChatContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen, faInbox } from '@fortawesome/free-solid-svg-icons'; // Import inbox icon
+import { faDoorOpen, faInbox } from '@fortawesome/free-solid-svg-icons';
 
 const Header = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
+  const { unreadCount } = useChat(); // Fetch the unread count from the Chat context
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -21,13 +23,24 @@ const Header = () => {
         </div>
         <ul className="flex space-x-4">
           <li><Link to="/" className="hover:text-gray-300">Home</Link></li>
-          <li><Link to="/profile" className="hover:text-gray-300">Profile</Link></li>
+          {isAuthenticated && user && (
+            <li>
+              <Link to={`/user/${user.name}/${user.lastname}`} className="hover:text-gray-300">
+                Profile
+              </Link>
+            </li>
+          )}
         </ul>
         {isAuthenticated ? (
           <ul className="flex space-x-4">
-            <li>
+            <li className="relative">
               <Link to="/inbox" className="hover:text-gray-300">
-                <FontAwesomeIcon icon={faInbox} /> {/* Use inbox icon */}
+                <FontAwesomeIcon icon={faInbox} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                    {unreadCount}
+                  </span>
+                )}
               </Link>
             </li>
             <li className='logout'>

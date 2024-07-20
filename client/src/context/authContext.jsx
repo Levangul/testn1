@@ -1,37 +1,62 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import decode from "jwt-decode";
+import AuthService from "../utils/auth"; // Assuming AuthService is exported correctly
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("id_token"));
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("id_token");
+    const token = AuthService.getToken();
     if (token) {
-      const decoded = decode(token);
-      setUser({ ...decoded.data, id: decoded.data._id });
+      if (AuthService.isTokenExpired(token)) {
+        AuthService.logout();
+        setIsAuthenticated(false);
+        setUser(null);
+        navigate('/');
+      } else {
+        const decoded = decode(token);
+        setUser({
+          id: decoded.data._id,
+          email: decoded.data.email,
+          name: decoded.data.name,
+          lastname: decoded.data.lastname,
+        });
+      }
     }
-  }, []);
+  }, [navigate]);
 
   const getToken = () => {
-    return localStorage.getItem("id_token");
+    const token = AuthService.getToken();
+    if (AuthService.isTokenExpired(token)) {
+      logout();
+      return null;
+    }
+    return token;
   };
 
   const login = (token) => {
-    localStorage.setItem("id_token", token);
+    AuthService.login(token);
     setIsAuthenticated(true);
     const decoded = decode(token);
-    setUser({ ...decoded.data, id: decoded.data._id });
+    setUser({
+      id: decoded.data._id,
+      email: decoded.data.email,
+      name: decoded.data.name,
+      lastname: decoded.data.lastname,
+    });
+    navigate('/');
   };
 
   const logout = () => {
-    localStorage.removeItem("id_token");
+    AuthService.logout();
     setIsAuthenticated(false);
     setUser(null);
-    // Navigate to home page after logout
-    window.location.assign("/");
+    navigate('/');
   };
 
   return (

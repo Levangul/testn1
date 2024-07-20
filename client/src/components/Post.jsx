@@ -41,7 +41,8 @@ const Post = ({ post }) => {
         text: commentText,
         author: {
           id: user ? user.id : null,
-          username: user ? user.username : 'Anonymous',
+          name: user ? user.name : 'Anonymous',
+          lastname: user ? user.lastname : '',
           __typename: 'User',
         },
         post: {
@@ -70,13 +71,13 @@ const Post = ({ post }) => {
         });
       }
 
-      const existingUser = cache.readQuery({ query: GET_USER, variables: { username: user ? user.username : '' } });
+      const existingUser = cache.readQuery({ query: GET_USER, variables: { name: user.name, lastname: user.lastname } });
 
       if (existingUser && existingUser.user && existingUser.user.posts) {
         const updatedUserPosts = existingUser.user.posts.filter((p) => p.id !== removePost.id);
         cache.writeQuery({
           query: GET_USER,
-          variables: { username: user ? user.username : '' },
+          variables: { name: user.name, lastname: user.lastname },
           data: {
             user: {
               ...existingUser.user,
@@ -177,7 +178,7 @@ const Post = ({ post }) => {
     <div className="bg-white shadow-md rounded-lg p-4 mb-4">
       <div className="post-content">
         <h3 className="post-author text-lg font-semibold mb-2 text-gray-900">
-          <Link to={`/user/${post.author.username}`} className="text-blue-500 hover:underline">{post.author.username}</Link>
+          <Link to={`/user/${post.author.name}/${post.author.lastname}`} className="text-blue-500 hover:underline">{post.author.name} {post.author.lastname}</Link>
           {user && user.id === post.author.id && (
             <button className="delete-button text-red-500 hover:text-red-700 ml-2 bg-transparent border-none" onClick={handlePostDelete}>🗑️</button>
           )}
@@ -188,7 +189,7 @@ const Post = ({ post }) => {
           {post.comments.map((comment) => (
             <div key={comment.id} className="comment mb-2">
               <span className="comment-username font-semibold text-gray-900">
-                <Link to={`/user/${comment.author.username}`} className="text-blue-500 hover:underline">{comment.author.username}</Link>
+                <Link to={`/user/${comment.author.name}/${comment.author.lastname}`} className="text-blue-500 hover:underline">{comment.author.name} {comment.author.lastname}</Link>
               </span>: <span className="comment-text text-gray-900">{comment.text}</span>
               {user && user.id === comment.author.id && (
                 <button className="delete-button text-red-500 hover:text-red-700 ml-2 bg-transparent border-none" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
@@ -215,3 +216,4 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+

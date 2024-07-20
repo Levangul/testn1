@@ -14,10 +14,11 @@ const SearchUser = () => {
     debounce((term) => {
       if (term.trim()) {
         console.log(`Searching for: ${term}`);
-        searchUser({ variables: { username: term } });
+        const [name, lastname] = term.split(' ');
+        searchUser({ variables: { name, lastname: lastname || "" } });
       }
     }, 300),
-    [searchUser] 
+    [searchUser]
   );
 
   useEffect(() => {
@@ -26,9 +27,9 @@ const SearchUser = () => {
     }
   }, [searchTerm, debouncedSearch]);
 
-  const handleUserClick = (username) => {
-    console.log(`Navigating to user profile: ${username}`);
-    navigate(`/user/${username}`);
+  const handleUserClick = (name, lastname) => {
+    console.log(`Navigating to user profile: ${name} ${lastname}`);
+    navigate(`/user/${name}/${lastname}`);
   };
 
   return (
@@ -45,7 +46,7 @@ const SearchUser = () => {
       {data && data.searchUser && (
         <div className="search-results">
           {data.searchUser.map((user) => (
-            <UserCard key={user.id} user={user} onClick={() => handleUserClick(user.username)} />
+            <UserCard key={user.id} user={user} onClick={() => handleUserClick(user.name, user.lastname)} />
           ))}
         </div>
       )}
