@@ -1,79 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { useQuery } from "@apollo/client";
-import { GET_MESSAGES } from "../utils/queries";
 import { useAuth } from "../context/AuthContext";
+import { useChat } from "../context/ChatContext";
 import ChatThread from "./ChatThread";
-import io from 'socket.io-client';
 import '../css/inbox.css';
-
-const socket = io(import.meta.env.VITE_API_URL);
 
 const Inbox = () => {
   const { user } = useAuth();
-  const { loading, error, data, refetch } = useQuery(GET_MESSAGES);
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [threads, setThreads] = useState({});
-
-  useEffect(() => {
-    if (data && data.messages && user) {
-      const updatedThreads = {};
-      data.messages.forEach((msg) => {
-        const otherUser = msg.sender.id === user.id ? msg.receiver : msg.sender;
-        if (!updatedThreads[otherUser.id]) {
-          updatedThreads[otherUser.id] = {
-            user: otherUser,
-            messages: [],
-          };
-        }
-        updatedThreads[otherUser.id].messages.push(msg);
-      });
-
-      // Sort messages by timestamp
-      Object.values(updatedThreads).forEach((thread) => {
-        thread.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      });
-
-      setThreads(updatedThreads);
-    }
-  }, [data, user]);
+  const { receiverId, threads, loading, error, refetch } = useChat();
+  const [selectedUserId, setSelectedUserId] = useState(receiverId);
 
   useEffect(() => {
     if (user) {
-      socket.emit('join', { userId: user.id });
-
-      socket.on('receiveMessage', (newMessage) => {
-        const otherUser = newMessage.senderId === user.id ? newMessage.receiver : newMessage.sender;
-        setThreads((prevThreads) => {
-          const updatedThreads = { ...prevThreads };
-          if (!updatedThreads[otherUser.id]) {
-            updatedThreads[otherUser.id] = {
-              user: otherUser,
-              messages: [],
-            };
-          }
-          updatedThreads[otherUser.id].messages.push(newMessage);
-
-          // Sort messages by timestamp
-          updatedThreads[otherUser.id].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-          
-          return updatedThreads;
-        });
-      });
+      refetch(); // Fetch threads when the component mounts and user is available
     }
-
-    return () => {
-      socket.off('receiveMessage');
-    };
-  }, [user]);
+  }, [user, refetch]);
 
   const handleUserClick = (userId) => {
     setSelectedUserId(userId);
   };
 
+  useEffect(() => {
+    setSelectedUserId(receiverId);
+  }, [receiverId]);
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
-  if (!user) return <p>Loading user...</p>;
+  const selectedThread = threads[selectedUserId];
 
   return (
     <div className="inbox-container">
@@ -87,8 +40,8 @@ const Inbox = () => {
         ))}
       </div>
       <div className="chat-area">
-        {selectedUserId ? (
-          <ChatThread thread={threads[selectedUserId]} onBack={() => setSelectedUserId(null)} />
+        {selectedThread ? (
+          <ChatThread thread={selectedThread} onBack={() => setSelectedUserId(null)} />
         ) : (
           <p>Select a user to view the chat</p>
         )}
@@ -98,3 +51,4 @@ const Inbox = () => {
 };
 
 export default Inbox;
+

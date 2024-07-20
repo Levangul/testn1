@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { GET_USER } from '../utils/queries';
 import { UPDATE_USER_INFO } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
-import ChatComponent from '../components/ChatComponent';
 import '../css/profile.css';
 
 const Profile = () => {
   const { name, lastname } = useParams();
+  const navigate = useNavigate(); // Use navigate from react-router-dom
   const { user } = useAuth();
   const { setReceiverId } = useChat();
-  
+
   useEffect(() => {
     console.log("Params:", name, lastname);
     console.log("Auth User:", user);
@@ -36,8 +36,7 @@ const Profile = () => {
   const [aboutMe, setAboutMe] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState('');
-  const [showChat, setShowChat] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(''); // Ensure message state is defined
 
   const [updateUserInfo] = useMutation(UPDATE_USER_INFO);
 
@@ -118,9 +117,9 @@ const Profile = () => {
   };
 
   const handleSendMessage = () => {
-    if (data && data.user && data.user.id !== user.id) { // Use 'id' instead of '_id'
-      setReceiverId(data.user.id); // Use 'id' instead of '_id'
-      setShowChat(true);
+    if (data && data.user && data.user.id !== user.id) {
+      setReceiverId(data.user.id);
+      navigate('/inbox'); // Redirect to inbox page
     } else {
       console.error('Cannot send message to self or invalid user data');
     }
@@ -231,11 +230,11 @@ const Profile = () => {
           ))}
         </div>
       </div>
-
-      {showChat && <ChatComponent />}
     </div>
   );
 };
 
 export default Profile;
+
+
 
