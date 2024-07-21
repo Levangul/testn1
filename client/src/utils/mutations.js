@@ -73,6 +73,12 @@ export const SEND_MESSAGE = gql`
   }
 `;
 
+export const MARK_MESSAGES_AS_READ = gql`
+  mutation markMessagesAsRead($receiverId: ID!) {
+    markMessagesAsRead(receiverId: $receiverId)
+  }
+`;
+
 
 export const ADD_COMMENT = gql`
   mutation addComment($postId: ID!, $text: String!) {

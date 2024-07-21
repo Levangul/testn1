@@ -17,27 +17,51 @@ const ChatThread = ({ thread, onBack }) => {
   const messageListRef = useRef(null);
 
   useEffect(() => {
-    openChatWithUser(thread.user.id); // Mark thread as read when opened
-  }, [thread.user.id]); // Add thread.user.id to the dependency array to ensure it only runs once per thread
+    if (thread && thread.user) {
+      openChatWithUser(thread.user.id);
+    }
+  }, [thread, openChatWithUser]);
+
+  useEffect(() => {
+    if (thread && thread.messages) {
+      setMessages(parseAndSortMessages(thread.messages));
+    }
+  }, [thread]);
+
+  useEffect(() => {
+    if (thread && thread.user) {
+      const handleReceiveMessage = (newMessage) => {
+        if (newMessage.sender.id === thread.user.id || newMessage.receiver.id === thread.user.id) {
+          setMessages((prevMessages) => {
+            const updatedMessages = [...prevMessages, newMessage];
+            return parseAndSortMessages(updatedMessages);
+          });
+        }
+      };
+
+      socket.on('receiveMessage', handleReceiveMessage);
+
+      return () => {
+        socket.off('receiveMessage', handleReceiveMessage);
+      };
+    }
+  }, [thread]);
 
   const parseTimestamp = (timestamp) => {
     const date = new Date(parseInt(timestamp));
     if (isNaN(date.getTime())) {
       console.error("Invalid Date:", timestamp);
-      return new Date(); // Fallback to current date
+      return new Date();
     }
     return date;
   };
 
-  useEffect(() => {
-    // Parse and sort messages by timestamp
-    const parsedMessages = thread.messages.map((msg) => ({
+  const parseAndSortMessages = (msgs) => {
+    return msgs.map((msg) => ({
       ...msg,
-      timestamp: parseTimestamp(msg.timestamp)
-    }));
-    const sortedMessages = parsedMessages.sort((a, b) => a.timestamp - b.timestamp);
-    setMessages(sortedMessages);
-  }, [thread.messages]);
+      timestamp: parseTimestamp(msg.timestamp),
+    })).sort((a, b) => a.timestamp - b.timestamp);
+  };
 
   const sendMessage = async () => {
     if (message.trim()) {
@@ -51,20 +75,22 @@ const ChatThread = ({ thread, onBack }) => {
           sender: user,
           receiver: thread.user,
           message: data.sendMessage.message,
-          timestamp: parseTimestamp(data.sendMessage.timestamp), // Ensure proper parsing
+          timestamp: parseTimestamp(data.sendMessage.timestamp),
+          read: true,
         };
 
         socket.emit('sendMessage', newMessage);
 
         setMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages, newMessage];
-          updatedMessages.sort((a, b) => a.timestamp - b.timestamp);
-          return updatedMessages;
+          const updatedMessages = [...prevMessages, { ...newMessage }];
+          return parseAndSortMessages(updatedMessages);
         });
 
         setMessage('');
       } catch (error) {
         console.error('Error sending message:', error);
+        // Optionally, provide user feedback
+        alert('Failed to send message. Please try again.');
       }
     }
   };
@@ -79,41 +105,54 @@ const ChatThread = ({ thread, onBack }) => {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    // Scroll to bottom after initial render
-    scrollToBottom();
-  }, []);
+  if (!thread || !thread.user) {
+    return (
+      <div className="chat-thread">
+        <button onClick={onBack}>Back to Inbox</button>
+        <p>Select a user to start a conversation</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="chat-thread">
-      <button onClick={onBack}>Back to Inbox</button>
-      <h3>Chat with {thread.user.name} {thread.user.lastname}</h3>
-      <div className="message-list" ref={messageListRef}>
-        {messages.map((msg) => (
-          <div key={msg.id} className="message">
-            <p>
-              <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-            </p>
-            <p>
-              <small>{msg.timestamp.toLocaleString()}</small>
-            </p>
-          </div>
-        ))}
-      </div>
-      <div className="send-message">
-        <input
-          type="text"
-          placeholder="Type your message..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-        <button onClick={sendMessage}>Send</button>
+    <div className="chat-thread-container">
+      <div className="chat-thread">
+        <button onClick={onBack}>Back to Inbox</button>
+        <h3>Chat with {thread.user.name} {thread.user.lastname}</h3>
+        <div className="message-list" ref={messageListRef}>
+          {messages.map((msg) => (
+            <div key={msg.id} className="message">
+              <p>
+                <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
+              </p>
+              <p>
+                <small>{msg.timestamp.toLocaleString()}</small>
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="send-message">
+          <input
+            type="text"
+            placeholder="Type your message..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' ? sendMessage() : null} // Send message on Enter key press
+          />
+          <button onClick={sendMessage}>Send</button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default ChatThread;
+
+
+
+
+
+
 
 
 

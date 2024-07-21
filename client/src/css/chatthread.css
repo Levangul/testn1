@@ -1,29 +1,51 @@
+.chat-thread-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .chat-thread {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-  
-  .message-list {
-    flex: 1;
-    overflow-y: auto;
-  }
-  
-  .message {
-    margin-bottom: 10px;
-  }
-  
-  .message p {
-    margin: 0;
-  }
-  
-  .message small {
-    color: #999;
-  }
-  
-  button {
-    padding: 10px 20px;
-    margin-bottom: 10px;
-    cursor: pointer;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 10px; /* Prevent last message from being obscured by input */
+}
+
+.message {
+  margin-bottom: 10px;
+}
+
+.message p {
+  margin: 0;
+}
+
+.message small {
+  color: #999;
+}
+
+.send-message {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+  background: #fff; /* Ensure the send-message area is always visible */
+}
+
+.send-message input {
+  flex: 1;
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px 20px;
+  cursor: pointer;
+}

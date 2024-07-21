@@ -143,6 +143,20 @@ const resolvers = {
     
       return newMessage.populate('sender receiver');
     },
+    markMessagesAsRead: async (_, { receiverId }, { user }) => {
+      if (!user) throw new AuthenticationError("You must be logged in");
+
+      try {
+        await Message.updateMany(
+          { sender: receiverId, receiver: user._id, read: false },
+          { $set: { read: true } }
+        );
+        return true;
+      } catch (error) {
+        console.error("Error marking messages as read:", error);
+        return false;
+      }
+    },
     
     removeComment: async (parent, { commentId }, context) => {
       if (context.user) {

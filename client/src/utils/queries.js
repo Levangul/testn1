@@ -65,6 +65,7 @@ export const GET_MESSAGES = gql`
       }
       message
       timestamp
+      read
     }
   }
 `;

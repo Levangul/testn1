@@ -67,10 +67,19 @@ io.on('connection', (socket) => {
 
       const responseMessage = {
         id: chatMessage.id,
-        senderId,
-        receiverId,
+        sender: {
+          id: senderId,
+          name: chatMessage.sender.name,  // Assuming sender and receiver have a name field
+          lastname: chatMessage.sender.lastname,
+        },
+        receiver: {
+          id: receiverId,
+          name: chatMessage.receiver.name,
+          lastname: chatMessage.receiver.lastname,
+        },
         message,
         timestamp: chatMessage.timestamp,
+        read: false, // Adding the read status to the message
       };
 
       console.log('Message saved, emitting to receiver and sender:', responseMessage);
@@ -86,7 +95,6 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 });
-
 
 // Configure Apollo Server
 const apolloServer = new ApolloServer({

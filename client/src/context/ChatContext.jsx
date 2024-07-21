@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { GET_MESSAGES } from "../utils/queries";
+import { MARK_MESSAGES_AS_READ } from "../utils/mutations";
 import io from 'socket.io-client';
 import { useAuth } from "../context/AuthContext";
 
@@ -12,36 +13,41 @@ const socket = io(import.meta.env.VITE_API_URL);
 
 export const ChatProvider = ({ children }) => {
   const { user } = useAuth();
-  const { loading, error, data, refetch } = useQuery(GET_MESSAGES);
+  const { loading, error, data, refetch } = useQuery(GET_MESSAGES, {
+    skip: !user, // Skip query if no user is logged in
+  });
+  const [markMessagesAsRead] = useMutation(MARK_MESSAGES_AS_READ);
   const [receiverId, setReceiverId] = useState(null);
   const [threads, setThreads] = useState({});
-  const [unreadUsers, setUnreadUsers] = useState(new Set()); // Track users who sent unread messages
+  const [unreadUsers, setUnreadUsers] = useState(new Set());
 
   useEffect(() => {
     if (data && data.messages && user) {
       const updatedThreads = {};
       const userSet = new Set();
-      
+
       data.messages.forEach((msg) => {
         const otherUser = msg.sender.id === user.id ? msg.receiver : msg.sender;
         if (!updatedThreads[otherUser.id]) {
           updatedThreads[otherUser.id] = {
             user: otherUser,
             messages: [],
-            unread: true, // Mark thread as unread initially
+            unread: false,
           };
         }
-        updatedThreads[otherUser.id].messages.push(msg);
-        userSet.add(otherUser.id); // Add sender/receiver to the set
+        updatedThreads[otherUser.id].messages.push({ ...msg });
+        if (msg.sender.id !== user.id && !msg.read) {
+          updatedThreads[otherUser.id].unread = true;
+          userSet.add(otherUser.id);
+        }
       });
 
-      // Sort messages by timestamp
       Object.values(updatedThreads).forEach((thread) => {
         thread.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
       });
 
       setThreads(updatedThreads);
-      setUnreadUsers(userSet); // Update unread users set
+      setUnreadUsers(userSet);
     }
   }, [data, user]);
 
@@ -50,25 +56,24 @@ export const ChatProvider = ({ children }) => {
       socket.emit('join', { userId: user.id });
 
       socket.on('receiveMessage', (newMessage) => {
-        const otherUser = newMessage.senderId === user.id ? newMessage.receiver : newMessage.sender;
+        const otherUser = newMessage.sender.id === user.id ? newMessage.receiver : newMessage.sender;
         setThreads((prevThreads) => {
           const updatedThreads = { ...prevThreads };
           if (!updatedThreads[otherUser.id]) {
             updatedThreads[otherUser.id] = {
               user: otherUser,
               messages: [],
-              unread: true, // Mark new thread as unread
+              unread: true,
             };
           }
-          updatedThreads[otherUser.id].messages.push(newMessage);
-          updatedThreads[otherUser.id].unread = true; // Mark as unread on new message
+          updatedThreads[otherUser.id].messages.push({ ...newMessage });
+          updatedThreads[otherUser.id].unread = true;
 
-          // Sort messages by timestamp
           updatedThreads[otherUser.id].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
           
           return updatedThreads;
         });
-        setUnreadUsers((prevUsers) => new Set(prevUsers.add(otherUser.id))); // Add to unread users set
+        setUnreadUsers((prevUsers) => new Set(prevUsers.add(otherUser.id)));
       });
 
       return () => {
@@ -77,18 +82,29 @@ export const ChatProvider = ({ children }) => {
     }
   }, [user]);
 
-  const openChatWithUser = (userId) => {
+  const openChatWithUser = async (userId) => {
     setReceiverId(userId);
+
+    try {
+      await markMessagesAsRead({ variables: { receiverId: userId } });
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+
     setThreads((prevThreads) => {
       const updatedThreads = { ...prevThreads };
       if (updatedThreads[userId]) {
-        updatedThreads[userId].unread = false; // Mark thread as read
+        updatedThreads[userId].unread = false;
+        updatedThreads[userId].messages = updatedThreads[userId].messages.map(msg => ({
+          ...msg,
+          read: msg.sender.id !== user.id ? true : msg.read,
+        }));
       }
       return updatedThreads;
     });
     setUnreadUsers((prevUsers) => {
       const updatedUsers = new Set(prevUsers);
-      updatedUsers.delete(userId); // Remove from unread users set
+      updatedUsers.delete(userId);
       return updatedUsers;
     });
   };
@@ -99,4 +115,6 @@ export const ChatProvider = ({ children }) => {
     </ChatContext.Provider>
   );
 };
+
+
 
