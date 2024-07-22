@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { useParams, useNavigate } from 'react-router-dom';
 import { GET_USER } from '../utils/queries';
-import { UPDATE_USER_INFO } from '../utils/mutations';
+import { UPDATE_USER_INFO, ADD_FRIEND, REMOVE_FRIEND } from '../utils/mutations'; // Import REMOVE_FRIEND mutation
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import Post from '../components/Post';
@@ -11,7 +11,7 @@ import '../css/profile.css';
 
 const Profile = () => {
   const { name, lastname } = useParams();
-  const navigate = useNavigate(); // Use navigate from react-router-dom
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { setReceiverId } = useChat();
 
@@ -36,9 +36,12 @@ const Profile = () => {
   const [aboutMe, setAboutMe] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState('');
-  const [message, setMessage] = useState(''); // Ensure message state is defined
+  const [message, setMessage] = useState('');
+  const [isFriend, setIsFriend] = useState(false); // Track if the user is a friend
 
   const [updateUserInfo] = useMutation(UPDATE_USER_INFO);
+  const [addFriend] = useMutation(ADD_FRIEND);
+  const [removeFriend] = useMutation(REMOVE_FRIEND); 
 
   useEffect(() => {
     if (data && data.user) {
@@ -46,8 +49,9 @@ const Profile = () => {
       setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
       setAboutMe(data.user.aboutMe || '');
       setProfileImageUrl(data.user.profilePicture || '');
+      setIsFriend(user && data.user.friends.some(friend => friend.id === user.id)); // Check if the user is a friend
     }
-  }, [data]);
+  }, [data, user]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -119,9 +123,37 @@ const Profile = () => {
   const handleSendMessage = () => {
     if (data && data.user && data.user.id !== user.id) {
       setReceiverId(data.user.id);
-      navigate('/inbox'); // Redirect to inbox page
+      navigate('/inbox'); 
     } else {
       console.error('Cannot send message to self or invalid user data');
+    }
+  };
+
+  const handleAddFriend = async () => {
+    if (data && data.user && data.user.id !== user.id) {
+      try {
+        await addFriend({ variables: { friendId: data.user.id } });
+        console.log('Friend added successfully');
+        setIsFriend(true);
+      } catch (error) {
+        console.error('Error adding friend:', error);
+      }
+    } else {
+      console.error('Cannot add self as friend or invalid user data');
+    }
+  };
+
+  const handleRemoveFriend = async () => {
+    if (data && data.user && data.user.id !== user.id) {
+      try {
+        await removeFriend({ variables: { friendId: data.user.id } });
+        console.log('Friend removed successfully');
+        setIsFriend(false);
+      } catch (error) {
+        console.error('Error removing friend:', error);
+      }
+    } else {
+      console.error('Cannot remove self as friend or invalid user data');
     }
   };
 
@@ -209,7 +241,7 @@ const Profile = () => {
           </div>
         </div>
         {user && (user.name !== data.user.name || user.lastname !== data.user.lastname) && (
-          <div className="send-message-section mt-4">
+          <div className="action-section mt-4">
             <textarea
               placeholder="Type your message here..."
               value={message}
@@ -219,6 +251,15 @@ const Profile = () => {
             <button onClick={handleSendMessage} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">
               Send Message
             </button>
+            {isFriend ? (
+              <button onClick={handleRemoveFriend} className="bg-red-500 text-white px-4 py-2 rounded mt-2 ml-2">
+                Delete Friend
+              </button>
+            ) : (
+              <button onClick={handleAddFriend} className="bg-green-500 text-white px-4 py-2 rounded mt-2 ml-2">
+                Add Friend
+              </button>
+            )}
           </div>
         )}
 
