@@ -1,7 +1,5 @@
 import { gql } from '@apollo/client';
 
-
-
 export const GET_USER = gql`
   query getUser($name: String!, $lastname: String!) {
     user(name: $name, lastname: $lastname) {
@@ -13,6 +11,12 @@ export const GET_USER = gql`
       birthday
       aboutMe
       profilePicture
+      friends {
+        id
+        name
+        lastname
+        profilePicture
+      }
       posts {
         id
         text
@@ -35,6 +39,7 @@ export const GET_USER = gql`
     }
   }
 `;
+
 
 
 

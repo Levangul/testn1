@@ -14,7 +14,7 @@
 .message-list {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 10px; /* Prevent last message from being obscured by input */
+  padding-bottom: 10px; 
 }
 
 .message {
@@ -34,7 +34,7 @@
   align-items: center;
   padding: 10px;
   border-top: 1px solid #ddd;
-  background: #fff; /* Ensure the send-message area is always visible */
+  background: #fff;
 }
 
 .send-message input {
