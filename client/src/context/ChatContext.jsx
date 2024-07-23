@@ -14,7 +14,7 @@ const socket = io(import.meta.env.VITE_API_URL);
 export const ChatProvider = ({ children }) => {
   const { user } = useAuth();
   const { loading, error, data, refetch } = useQuery(GET_MESSAGES, {
-    skip: !user, // Skip query if no user is logged in
+    skip: !user,
   });
   const [markMessagesAsRead] = useMutation(MARK_MESSAGES_AS_READ);
   const [receiverId, setReceiverId] = useState(null);
@@ -115,6 +115,4 @@ export const ChatProvider = ({ children }) => {
     </ChatContext.Provider>
   );
 };
-
-
 

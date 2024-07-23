@@ -4,6 +4,7 @@ import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT } from '../utils/mutations';
 import { GET_POSTS, GET_USER } from '../utils/queries';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import '../css/post.css';
 
 const Post = ({ post }) => {
   const [commentText, setCommentText] = useState('');
@@ -11,8 +12,6 @@ const Post = ({ post }) => {
 
   const [addComment] = useMutation(ADD_COMMENT, {
     update(cache, { data: { addComment } }) {
-      if (!post || !post.id) return;
-
       const postId = post.id;
       const existingPosts = cache.readQuery({ query: GET_POSTS });
 
@@ -21,7 +20,7 @@ const Post = ({ post }) => {
           if (p.id === postId) {
             return {
               ...p,
-              comments: [...p.comments, addComment],
+              comments: [...p.comments, addComment], // Append the new comment at the bottom
             };
           }
           return p;
@@ -39,6 +38,7 @@ const Post = ({ post }) => {
       addComment: {
         id: Math.random().toString(36).substr(2, 9),
         text: commentText,
+        date: new Date().toISOString(),
         author: {
           id: user ? user.id : null,
           name: user ? user.name : 'Anonymous',
@@ -175,40 +175,40 @@ const Post = ({ post }) => {
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 mb-4">
+    <div className="post-container">
       <div className="post-content">
-        <h3 className="post-author text-lg font-semibold mb-2 text-gray-900">
-          <Link to={`/user/${post.author.name}/${post.author.lastname}`} className="text-blue-500 hover:underline">{post.author.name} {post.author.lastname}</Link>
+        <h3 className="post-author">
+          <Link to={`/user/${post.author.name}/${post.author.lastname}`}>{post.author.name} {post.author.lastname}</Link>
           {user && user.id === post.author.id && (
-            <button className="delete-button text-red-500 hover:text-red-700 ml-2 bg-transparent border-none" onClick={handlePostDelete}>🗑️</button>
+            <button className="delete-button" onClick={handlePostDelete}>🗑️</button>
           )}
         </h3>
-        <p className="post-text mb-4 text-gray-900">{post.text}</p>
+        <p className="post-text">{post.text}</p>
         <div className="comments-section">
-          <h4 className="text-md font-semibold mb-2 text-gray-900">Comments</h4>
+          <h4>Comments</h4>
           {post.comments.map((comment) => (
-            <div key={comment.id} className="comment mb-2">
-              <span className="comment-username font-semibold text-gray-900">
-                <Link to={`/user/${comment.author.name}/${comment.author.lastname}`} className="text-blue-500 hover:underline">{comment.author.name} {comment.author.lastname}</Link>
-              </span>: <span className="comment-text text-gray-900">{comment.text}</span>
+            <div key={comment.id} className="comment">
+              <span className="comment-username">
+                <Link to={`/user/${comment.author.name}/${comment.author.lastname}`}>{comment.author.name} {comment.author.lastname}</Link>
+              </span>: <span className="comment-text">{comment.text}</span>
               {user && user.id === comment.author.id && (
-                <button className="delete-button text-red-500 hover:text-red-700 ml-2 bg-transparent border-none" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
+                <button className="delete-button" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
               )}
             </div>
           ))}
         </div>
       </div>
       {user && (
-        <form className="comment-form mt-4" onSubmit={handleCommentSubmit}>
+        <form className="comment-form" onSubmit={handleCommentSubmit}>
           <input
-            className="comment-input w-full p-2 border border-gray-300 rounded-md text-gray-900"
+            className="comment-input"
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Add a comment"
             required
           />
-          <button className="comment-button mt-2 bg-blue-500 text-white px-4 py-2 rounded" type="submit">Comment</button>
+          <button className="comment-button" type="submit">Comment</button>
         </form>
       )}
     </div>
@@ -216,4 +216,3 @@ const Post = ({ post }) => {
 };
 
 export default Post;
-

@@ -89,7 +89,6 @@ const ChatThread = ({ thread, onBack }) => {
         setMessage('');
       } catch (error) {
         console.error('Error sending message:', error);
-        // Optionally, provide user feedback
         alert('Failed to send message. Please try again.');
       }
     }
@@ -137,7 +136,7 @@ const ChatThread = ({ thread, onBack }) => {
             placeholder="Type your message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' ? sendMessage() : null} // Send message on Enter key press
+            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
           />
           <button onClick={sendMessage}>Send</button>
         </div>
@@ -147,6 +146,8 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
+
+
 
 
 

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen, faInbox } from '@fortawesome/free-solid-svg-icons';
+import { faDoorOpen, faInbox, faUsers } from '@fortawesome/free-solid-svg-icons';
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -32,7 +32,12 @@ const Header = () => {
           )}
         </ul>
         {isAuthenticated ? (
-          <ul className="flex space-x-4">
+          <ul className="flex space-x-4 items-center">
+            <li className="relative">
+              <Link to="/friends" className="hover:text-gray-300" aria-label="Friends">
+                <FontAwesomeIcon icon={faUsers} />
+              </Link>
+            </li>
             <li className="relative">
               <Link to="/inbox" className="hover:text-gray-300" aria-label="Inbox">
                 <FontAwesomeIcon icon={faInbox} />
@@ -61,6 +66,5 @@ const Header = () => {
 };
 
 export default Header;
-
 
 

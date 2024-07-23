@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import ChatThread from "./ChatThread";
@@ -6,17 +7,29 @@ import '../css/inbox.css';
 
 const Inbox = () => {
   const { user } = useAuth();
-  const { receiverId, threads, loading, error, refetch } = useChat();
+  const { receiverId, setReceiverId, threads, loading, error, refetch, openChatWithUser } = useChat();
   const [selectedUserId, setSelectedUserId] = useState(receiverId);
+  const location = useLocation();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const receiverIdFromParams = queryParams.get("receiverId");
+    if (receiverIdFromParams) {
+      setReceiverId(receiverIdFromParams);
+      setSelectedUserId(receiverIdFromParams);
+      openChatWithUser(receiverIdFromParams);
+    }
+  }, [location.search, setReceiverId, openChatWithUser]);
 
   useEffect(() => {
     if (user) {
-      refetch(); // Fetch threads when the component mounts and user is available
+      refetch(); 
     }
   }, [user, refetch]);
 
   const handleUserClick = (userId) => {
     setSelectedUserId(userId);
+    openChatWithUser(userId);
   };
 
   useEffect(() => {
@@ -26,7 +39,7 @@ const Inbox = () => {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
-  const selectedThread = threads[selectedUserId];
+  const selectedThread = threads[selectedUserId] || { user: { id: selectedUserId }, messages: [] };
 
   return (
     <div className="inbox-container">

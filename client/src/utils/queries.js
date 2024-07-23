@@ -29,6 +29,7 @@ export const GET_USER = gql`
         comments {
           id
           text
+          date
           author {
             id
             name
@@ -39,9 +40,6 @@ export const GET_USER = gql`
     }
   }
 `;
-
-
-
 
 export const SEARCH_USER = gql`
   query searchUser($name: String!, $lastname: String!) {
@@ -75,8 +73,6 @@ export const GET_MESSAGES = gql`
   }
 `;
 
-
-
 export const GET_POSTS = gql`
   query getPosts {
     posts {
@@ -91,6 +87,7 @@ export const GET_POSTS = gql`
       comments {
         id
         text
+        date
         author {
           id
           name
