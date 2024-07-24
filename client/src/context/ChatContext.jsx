@@ -3,6 +3,7 @@ import { useQuery } from "@apollo/client";
 import { GET_MESSAGES } from "../utils/queries";
 import io from 'socket.io-client';
 import { useAuth } from "../context/AuthContext";
+import dayjs from 'dayjs';
 
 const ChatContext = createContext();
 
@@ -17,6 +18,13 @@ export const ChatProvider = ({ children }) => {
   const [isProfileChatOpen, setIsProfileChatOpen] = useState(false);
   const [threads, setThreads] = useState({});
   const [unreadUsers, setUnreadUsers] = useState(new Set());
+
+  const parseAndSortMessages = (msgs) => {
+    return msgs.map((msg) => ({
+      ...msg,
+      timestamp: dayjs(msg.timestamp).toDate(),
+    })).sort((a, b) => a.timestamp - b.timestamp);
+  };
 
   useEffect(() => {
     if (data && data.messages && user) {
@@ -36,7 +44,7 @@ export const ChatProvider = ({ children }) => {
       });
 
       Object.values(updatedThreads).forEach((thread) => {
-        thread.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        thread.messages = parseAndSortMessages(thread.messages);
       });
 
       setThreads(updatedThreads);
@@ -58,7 +66,7 @@ export const ChatProvider = ({ children }) => {
           updatedThreads[otherUser.id].messages.push({ ...newMessage });
           updatedThreads[otherUser.id].unread = true;
 
-          updatedThreads[otherUser.id].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          updatedThreads[otherUser.id].messages = parseAndSortMessages(updatedThreads[otherUser.id].messages);
           
           return updatedThreads;
         });
@@ -93,7 +101,7 @@ export const ChatProvider = ({ children }) => {
         sender: { id: user.id, name: user.name, lastname: user.lastname },
         receiver: { id: receiverId },
         message: data.sendMessage.message,
-        timestamp: data.sendMessage.timestamp,
+        timestamp: dayjs(data.sendMessage.timestamp).toDate(), // Ensure timestamp is parsed correctly
       };
 
       socket.emit('sendMessage', newMessage);
@@ -104,7 +112,7 @@ export const ChatProvider = ({ children }) => {
           updatedThreads[receiverId] = { user: { id: receiverId }, messages: [] };
         }
         updatedThreads[receiverId].messages.push(newMessage);
-        updatedThreads[receiverId].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        updatedThreads[receiverId].messages = parseAndSortMessages(updatedThreads[receiverId].messages);
         return updatedThreads;
       });
     } catch (error) {
@@ -118,5 +126,3 @@ export const ChatProvider = ({ children }) => {
     </ChatContext.Provider>
   );
 };
-
-

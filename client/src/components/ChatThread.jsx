@@ -4,15 +4,16 @@ import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import io from 'socket.io-client';
 import { SEND_MESSAGE } from "../utils/mutations";
+import dayjs from 'dayjs';
 import '../css/chatThread.css';
 
 const socket = io(import.meta.env.VITE_API_URL);
 
 const ChatThread = ({ thread, onBack }) => {
   const { user } = useAuth();
-  const { openChatWithUser } = useChat();
+  const { openChatWithUser, sendMessage } = useChat();
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(thread.messages);
   const [sendMessageMutation] = useMutation(SEND_MESSAGE);
   const messageListRef = useRef(null);
 
@@ -24,7 +25,7 @@ const ChatThread = ({ thread, onBack }) => {
 
   useEffect(() => {
     if (thread && thread.messages) {
-      setMessages(parseAndSortMessages(thread.messages));
+      setMessages(thread.messages);
     }
   }, [thread]);
 
@@ -32,60 +33,22 @@ const ChatThread = ({ thread, onBack }) => {
     if (thread && thread.user) {
       const handleReceiveMessage = (newMessage) => {
         if (newMessage.sender.id === thread.user.id || newMessage.receiver.id === thread.user.id) {
-          setMessages((prevMessages) => {
-            const updatedMessages = [...prevMessages, newMessage];
-            return parseAndSortMessages(updatedMessages);
-          });
+          setMessages((prevMessages) => [...prevMessages, newMessage]);
         }
       };
 
       socket.on('receiveMessage', handleReceiveMessage);
 
       return () => {
-        socket.off('receiveMessage', handleReceiveMessage);
+        socket.off('receiveMessage');
       };
     }
   }, [thread]);
 
-  const parseTimestamp = (timestamp) => {
-    const date = new Date(parseInt(timestamp));
-    if (isNaN(date.getTime())) {
-      console.error("Invalid Date:", timestamp);
-      return new Date();
-    }
-    return date;
-  };
-
-  const parseAndSortMessages = (msgs) => {
-    return msgs.map((msg) => ({
-      ...msg,
-      timestamp: parseTimestamp(msg.timestamp),
-    })).sort((a, b) => a.timestamp - b.timestamp);
-  };
-
-  const sendMessage = async () => {
+  const handleSendMessage = async () => {
     if (message.trim() && thread.user.id !== user.id) {
       try {
-        const { data } = await sendMessageMutation({
-          variables: { receiverId: thread.user.id, message: message.trim() },
-        });
-
-        const newMessage = {
-          id: data.sendMessage.id,
-          sender: user,
-          receiver: thread.user,
-          message: data.sendMessage.message,
-          timestamp: parseTimestamp(data.sendMessage.timestamp),
-          read: true,
-        };
-
-        socket.emit('sendMessage', newMessage);
-
-        setMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages, { ...newMessage }];
-          return parseAndSortMessages(updatedMessages);
-        });
-
+        await sendMessage(thread.user.id, message.trim(), sendMessageMutation);
         setMessage('');
       } catch (error) {
         console.error('Error sending message:', error);
@@ -125,8 +88,7 @@ const ChatThread = ({ thread, onBack }) => {
                 <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
               </p>
               <p>
-                <small>{msg.timestamp.toLocaleString()}</small>
-              </p>
+                <small>{dayjs(msg.timestamp).format('YYYY-MM-DD HH:mm:ss')}</small></p>
             </div>
           ))}
         </div>
@@ -136,9 +98,9 @@ const ChatThread = ({ thread, onBack }) => {
             placeholder="Type your message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           />
-          <button onClick={sendMessage}>Send</button>
+          <button onClick={handleSendMessage}>Send</button>
         </div>
       </div>
     </div>
@@ -146,3 +108,4 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
+

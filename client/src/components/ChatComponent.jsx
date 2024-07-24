@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import { SEND_MESSAGE } from '../utils/mutations';
+import dayjs from 'dayjs';
 import '../css/chat.css';
 
 const ChatComponent = () => {
@@ -15,7 +16,7 @@ const ChatComponent = () => {
 
   const handleSendMessage = async () => {
     if (message.trim() && receiverId && receiverId !== user.id) {
-      sendMessage(receiverId, message.trim(), sendMessageMutation);
+      await sendMessage(receiverId, message.trim(), sendMessageMutation);
       setMessage('');
     } else {
       console.error('Cannot send message to self or empty message');
@@ -36,6 +37,7 @@ const ChatComponent = () => {
         {messages.map((msg) => (
           <div key={msg.id}>
             <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
+            <p><small>{dayjs(msg.timestamp).format('YYYY-MM-DD HH:mm:ss')}</small></p>
           </div>
         ))}
       </div>
@@ -54,6 +56,10 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
+
+
+
+
 
 
 

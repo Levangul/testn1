@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { GET_USER } from '../utils/queries';
 import { UPDATE_USER_INFO, ADD_FRIEND, REMOVE_FRIEND } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,7 @@ import '../css/profile.css';
 
 const Profile = () => {
   const { name, lastname } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { openChatWithUser } = useChat();
 
@@ -226,6 +227,7 @@ const Profile = () => {
 };
 
 export default Profile;
+
 
 
 
