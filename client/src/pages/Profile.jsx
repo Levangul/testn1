@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { GET_USER } from '../utils/queries';
 import { UPDATE_USER_INFO, ADD_FRIEND, REMOVE_FRIEND } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
@@ -11,15 +11,11 @@ import '../css/profile.css';
 
 const Profile = () => {
   const { name, lastname } = useParams();
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const { setReceiverId } = useChat();
+  const { openChatWithUser } = useChat();
 
   const { loading, error, data, refetch } = useQuery(GET_USER, {
-    variables: { 
-      name: name || user?.name, 
-      lastname: lastname || user?.lastname 
-    },
+    variables: { name: name || user?.name, lastname: lastname || user?.lastname },
     skip: (!name && !lastname) && !user,
   });
 
@@ -31,23 +27,9 @@ const Profile = () => {
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [isFriend, setIsFriend] = useState(false);
 
-  const [updateUserInfo] = useMutation(UPDATE_USER_INFO, {
-    onCompleted: () => refetch(),
-  });
-
-  const [addFriend] = useMutation(ADD_FRIEND, {
-    onCompleted: () => {
-      refetch();
-      setIsFriend(true);
-    },
-  });
-
-  const [removeFriend] = useMutation(REMOVE_FRIEND, {
-    onCompleted: () => {
-      refetch();
-      setIsFriend(false);
-    },
-  });
+  const [updateUserInfo] = useMutation(UPDATE_USER_INFO, { onCompleted: () => refetch() });
+  const [addFriend] = useMutation(ADD_FRIEND, { onCompleted: () => { refetch(); setIsFriend(true); } });
+  const [removeFriend] = useMutation(REMOVE_FRIEND, { onCompleted: () => { refetch(); setIsFriend(false); } });
 
   useEffect(() => {
     if (data && data.user) {
@@ -68,12 +50,7 @@ const Profile = () => {
         aboutMe: aboutMe || null,
         profilePicture: profileImageUrl,
       };
-
-      await updateUserInfo({
-        variables: updateFields,
-        refetchQueries: [{ query: GET_USER, variables: { name: user.name, lastname: user.lastname } }],
-      });
-
+      await updateUserInfo({ variables: updateFields });
       setEditable(false);
     } catch (err) {
       console.error('Error updating profile:', err);
@@ -109,16 +86,11 @@ const Profile = () => {
     formData.append('email', user.email);
 
     try {
-      const response = await fetch('http://localhost:3001/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
+      const response = await fetch('http://localhost:3001/upload', { method: 'POST', body: formData });
       if (!response.ok) {
         console.error('Failed to upload image', await response.text());
         return;
       }
-
       const data = await response.json();
       setProfileImageUrl(data.url);
     } catch (error) {
@@ -128,12 +100,11 @@ const Profile = () => {
 
   const handleSendMessage = () => {
     if (data && data.user && data.user.id !== user.id) {
-      navigate(`/inbox?receiverId=${data.user.id}`);
+      openChatWithUser(data.user.id, true); // Pass true to indicate it's from profile
     } else {
       console.error('Cannot send message to self or invalid user data');
     }
   };
-  
 
   const handleAddFriend = async () => {
     if (data && data.user && data.user.id !== user.id) {
@@ -180,12 +151,7 @@ const Profile = () => {
     <div className="profile-container p-4">
       <div className="profile-card bg-white shadow-md rounded p-4">
         <div className="profile-section mb-4 text-center">
-          <img
-            src={profileImageUrl || 'https://via.placeholder.com/150'}
-            alt="Profile"
-            className="profile-image rounded-full mb-4"
-            style={{ width: '150px', height: '150px' }}
-          />
+          <img src={profileImageUrl || 'https://via.placeholder.com/150'} alt="Profile" className="profile-image rounded-full mb-4" style={{ width: '150px', height: '150px' }} />
           {editable && (
             <>
               <input type="file" onChange={handleImageChange} className="mb-4" />
@@ -199,12 +165,7 @@ const Profile = () => {
             <div className="info-item">
               <span className="label">City:</span>
               {editable ? (
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="value-edit"
-                />
+                <input type="text" value={city} onChange={(e) => setCity(e.target.value)} className="value-edit" />
               ) : (
                 <span className="value">{data.user.city || 'N/A'}</span>
               )}
@@ -212,12 +173,7 @@ const Profile = () => {
             <div className="info-item">
               <span className="label">Birthday:</span>
               {editable ? (
-                <input
-                  type="date"
-                  value={birthday}
-                  onChange={(e) => setBirthday(e.target.value)}
-                  className="value-edit"
-                />
+                <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} className="value-edit" />
               ) : (
                 <span className="value">{data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : 'N/A'}</span>
               )}
@@ -225,11 +181,7 @@ const Profile = () => {
             <div className="info-item">
               <span className="label">About Me:</span>
               {editable ? (
-                <textarea
-                  value={aboutMe}
-                  onChange={(e) => setAboutMe(e.target.value)}
-                  className="value-edit"
-                />
+                <textarea value={aboutMe} onChange={(e) => setAboutMe(e.target.value)} className="value-edit" />
               ) : (
                 <span className="value">{data.user.aboutMe || 'N/A'}</span>
               )}
@@ -250,17 +202,11 @@ const Profile = () => {
         </div>
         {user && (user.name !== data.user.name || user.lastname !== data.user.lastname) && (
           <div className="action-section mt-4">
-            <button onClick={handleSendMessage} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">
-              Send Message
-            </button>
+            <button onClick={handleSendMessage} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">Send Message</button>
             {isFriend ? (
-              <button onClick={handleRemoveFriend} className="bg-red-500 text-white px-4 py-2 rounded mt-2 ml-2">
-                Remove Friend
-              </button>
+              <button onClick={handleRemoveFriend} className="bg-red-500 text-white px-4 py-2 rounded mt-2 ml-2">Remove Friend</button>
             ) : (
-              <button onClick={handleAddFriend} className="bg-green-500 text-white px-4 py-2 rounded mt-2 ml-2">
-                Add Friend
-              </button>
+              <button onClick={handleAddFriend} className="bg-green-500 text-white px-4 py-2 rounded mt-2 ml-2">Add Friend</button>
             )}
           </div>
         )}
@@ -268,9 +214,7 @@ const Profile = () => {
         <div className="profile-section mb-4">
           <h2 className="text-xl font-bold mt-8 mb-4">Your Posts</h2>
           {user && user.name === data.user.name && user.lastname === data.user.lastname && <CreatePost />}
-          {data.user.posts.map((post) => (
-            <Post key={post.id} post={post} />
-          ))}
+          {data.user.posts.map((post) => <Post key={post.id} post={post} />)}
         </div>
         <div className="profile-section mb-4">
           <h2 className="text-xl font-bold mt-8 mb-4">Friends</h2>
@@ -282,4 +226,9 @@ const Profile = () => {
 };
 
 export default Profile;
+
+
+
+
+
 

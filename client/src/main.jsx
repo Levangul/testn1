@@ -10,6 +10,7 @@ import Profile from './pages/Profile.jsx';
 import Inbox from './components/Inbox.jsx';
 import Friends from './components/Friends.jsx'
 
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
         path: "profile",
         element: <Profile />,
       },
+    
       {
         path: "user/:name/:lastname",
         element: <Profile />,

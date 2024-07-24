@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { GET_MESSAGES } from "../utils/queries";
-import { MARK_MESSAGES_AS_READ } from "../utils/mutations";
 import io from 'socket.io-client';
 import { useAuth } from "../context/AuthContext";
 
@@ -13,11 +12,9 @@ const socket = io(import.meta.env.VITE_API_URL);
 
 export const ChatProvider = ({ children }) => {
   const { user } = useAuth();
-  const { loading, error, data, refetch } = useQuery(GET_MESSAGES, {
-    skip: !user,
-  });
-  const [markMessagesAsRead] = useMutation(MARK_MESSAGES_AS_READ);
+  const { loading, error, data, refetch } = useQuery(GET_MESSAGES, { skip: !user });
   const [receiverId, setReceiverId] = useState(null);
+  const [isProfileChatOpen, setIsProfileChatOpen] = useState(false);
   const [threads, setThreads] = useState({});
   const [unreadUsers, setUnreadUsers] = useState(new Set());
 
@@ -29,11 +26,7 @@ export const ChatProvider = ({ children }) => {
       data.messages.forEach((msg) => {
         const otherUser = msg.sender.id === user.id ? msg.receiver : msg.sender;
         if (!updatedThreads[otherUser.id]) {
-          updatedThreads[otherUser.id] = {
-            user: otherUser,
-            messages: [],
-            unread: false,
-          };
+          updatedThreads[otherUser.id] = { user: otherUser, messages: [], unread: false };
         }
         updatedThreads[otherUser.id].messages.push({ ...msg });
         if (msg.sender.id !== user.id && !msg.read) {
@@ -60,11 +53,7 @@ export const ChatProvider = ({ children }) => {
         setThreads((prevThreads) => {
           const updatedThreads = { ...prevThreads };
           if (!updatedThreads[otherUser.id]) {
-            updatedThreads[otherUser.id] = {
-              user: otherUser,
-              messages: [],
-              unread: true,
-            };
+            updatedThreads[otherUser.id] = { user: otherUser, messages: [], unread: true };
           }
           updatedThreads[otherUser.id].messages.push({ ...newMessage });
           updatedThreads[otherUser.id].unread = true;
@@ -82,37 +71,52 @@ export const ChatProvider = ({ children }) => {
     }
   }, [user]);
 
-  const openChatWithUser = async (userId) => {
+  const openChatWithUser = async (userId, fromProfile = false) => {
     setReceiverId(userId);
-
-    try {
-      await markMessagesAsRead({ variables: { receiverId: userId } });
-    } catch (error) {
-      console.error("Error marking messages as read:", error);
+    if (fromProfile) {
+      setIsProfileChatOpen(true);
     }
+  };
 
-    setThreads((prevThreads) => {
-      const updatedThreads = { ...prevThreads };
-      if (updatedThreads[userId]) {
-        updatedThreads[userId].unread = false;
-        updatedThreads[userId].messages = updatedThreads[userId].messages.map(msg => ({
-          ...msg,
-          read: msg.sender.id !== user.id ? true : msg.read,
-        }));
-      }
-      return updatedThreads;
-    });
-    setUnreadUsers((prevUsers) => {
-      const updatedUsers = new Set(prevUsers);
-      updatedUsers.delete(userId);
-      return updatedUsers;
-    });
+  const closeProfileChat = () => {
+    setIsProfileChatOpen(false);
+  };
+
+  const sendMessage = async (receiverId, message, sendMessageMutation) => {
+    try {
+      const { data } = await sendMessageMutation({
+        variables: { receiverId, message },
+      });
+
+      const newMessage = {
+        id: data.sendMessage.id,
+        sender: { id: user.id, name: user.name, lastname: user.lastname },
+        receiver: { id: receiverId },
+        message: data.sendMessage.message,
+        timestamp: data.sendMessage.timestamp,
+      };
+
+      socket.emit('sendMessage', newMessage);
+
+      setThreads((prevThreads) => {
+        const updatedThreads = { ...prevThreads };
+        if (!updatedThreads[receiverId]) {
+          updatedThreads[receiverId] = { user: { id: receiverId }, messages: [] };
+        }
+        updatedThreads[receiverId].messages.push(newMessage);
+        updatedThreads[receiverId].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        return updatedThreads;
+      });
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   return (
-    <ChatContext.Provider value={{ receiverId, setReceiverId, threads, loading, error, refetch, openChatWithUser, unreadCount: unreadUsers.size }}>
+    <ChatContext.Provider value={{ receiverId, setReceiverId, threads, loading, error, refetch, openChatWithUser, closeProfileChat, isProfileChatOpen, sendMessage }}>
       {children}
     </ChatContext.Provider>
   );
 };
+
 

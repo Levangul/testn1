@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useMutation } from "@apollo/client";
-import { SEND_MESSAGE } from "../utils/mutations";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import io from 'socket.io-client';
+import { SEND_MESSAGE } from "../utils/mutations";
 import '../css/chatThread.css';
 
 const socket = io(import.meta.env.VITE_API_URL);
@@ -64,7 +64,7 @@ const ChatThread = ({ thread, onBack }) => {
   };
 
   const sendMessage = async () => {
-    if (message.trim()) {
+    if (message.trim() && thread.user.id !== user.id) {
       try {
         const { data } = await sendMessageMutation({
           variables: { receiverId: thread.user.id, message: message.trim() },
@@ -146,18 +146,3 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

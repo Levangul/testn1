@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import ChatThread from "./ChatThread";
@@ -7,39 +6,29 @@ import '../css/inbox.css';
 
 const Inbox = () => {
   const { user } = useAuth();
-  const { receiverId, setReceiverId, threads, loading, error, refetch, openChatWithUser } = useChat();
-  const [selectedUserId, setSelectedUserId] = useState(receiverId);
-  const location = useLocation();
-
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const receiverIdFromParams = queryParams.get("receiverId");
-    if (receiverIdFromParams) {
-      setReceiverId(receiverIdFromParams);
-      setSelectedUserId(receiverIdFromParams);
-      openChatWithUser(receiverIdFromParams);
-    }
-  }, [location.search, setReceiverId, openChatWithUser]);
+  const { receiverId, threads, loading, error, refetch } = useChat();
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   useEffect(() => {
     if (user) {
-      refetch(); 
+      refetch(); // Fetch threads when the component mounts and user is available
     }
   }, [user, refetch]);
 
   const handleUserClick = (userId) => {
     setSelectedUserId(userId);
-    openChatWithUser(userId);
   };
 
   useEffect(() => {
-    setSelectedUserId(receiverId);
+    if (receiverId) {
+      setSelectedUserId(receiverId);
+    }
   }, [receiverId]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
-  const selectedThread = threads[selectedUserId] || { user: { id: selectedUserId }, messages: [] };
+  const selectedThread = threads[selectedUserId];
 
   return (
     <div className="inbox-container">
@@ -53,7 +42,7 @@ const Inbox = () => {
         ))}
       </div>
       <div className="chat-area">
-        {selectedThread ? (
+        {selectedUserId ? (
           <ChatThread thread={selectedThread} onBack={() => setSelectedUserId(null)} />
         ) : (
           <p>Select a user to view the chat</p>
@@ -64,3 +53,5 @@ const Inbox = () => {
 };
 
 export default Inbox;
+
+
