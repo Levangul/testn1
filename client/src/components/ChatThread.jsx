@@ -3,7 +3,7 @@ import { useMutation } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import io from 'socket.io-client';
-import { SEND_MESSAGE } from "../utils/mutations";
+import { SEND_MESSAGE } from "../utils/mutations"
 import dayjs from 'dayjs';
 import '../css/chatThread.css';
 
@@ -108,4 +108,5 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
+
 
