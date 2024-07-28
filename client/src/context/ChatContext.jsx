@@ -102,14 +102,10 @@ export const ChatProvider = ({ children }) => {
         sender: { id: user.id, name: user.name, lastname: user.lastname },
         receiver: { id: receiverId },
         message: data.sendMessage.message,
-        timestamp: new Date(data.sendMessage.timestamp),
+        timestamp: data.sendMessage.timestamp,  // Assuming this is already correctly formatted
       };
 
-      socket.emit('sendMessage', { 
-        senderId: user.id,
-        receiverId: receiverId,
-        message: data.sendMessage.message 
-      });
+      socket.emit('sendMessage', newMessage);
 
       setThreads((prevThreads) => {
         const updatedThreads = { ...prevThreads };
