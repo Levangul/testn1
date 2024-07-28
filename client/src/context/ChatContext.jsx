@@ -30,7 +30,10 @@ export const ChatProvider = ({ children }) => {
       if (!updatedThreads[otherUser.id]) {
         updatedThreads[otherUser.id] = { user: otherUser, messages: [], unread: false };
       }
-      updatedThreads[otherUser.id].messages.push(msg);
+      updatedThreads[otherUser.id].messages.push({
+        ...msg,
+        timestamp: dayjs(msg.timestamp).toISOString() // Ensure the timestamp is formatted
+      });
       if (msg.sender.id !== user.id && !msg.read) {
         updatedThreads[otherUser.id].unread = true;
         userSet.add(otherUser.id);
@@ -56,6 +59,13 @@ export const ChatProvider = ({ children }) => {
       socket.emit('join', { userId: user.id });
 
       const handleReceiveMessage = (newMessage) => {
+        if (newMessage.sender.id === user.id) {
+          // If the message was sent by the user, skip handling it
+          return;
+        }
+
+        console.log('Received message timestamp:', newMessage.timestamp);
+        newMessage.timestamp = dayjs(newMessage.timestamp).toISOString(); // Ensure correct format
         setThreads((prevThreads) => {
           const updatedThreads = { ...prevThreads };
           const otherUser = newMessage.sender.id === user.id ? newMessage.receiver : newMessage.sender;
@@ -92,7 +102,14 @@ export const ChatProvider = ({ children }) => {
   };
 
   const sendMessage = async (receiverId, message, sendMessageMutation) => {
+    if (!user || !receiverId) {
+      console.error('Error: senderId or receiverId is undefined', { senderId: user?.id, receiverId });
+      return;
+    }
+
     try {
+      console.log('Sending message:', { senderId: user.id, receiverId, message });
+
       const { data } = await sendMessageMutation({
         variables: { receiverId, message },
       });
@@ -102,11 +119,15 @@ export const ChatProvider = ({ children }) => {
         sender: { id: user.id, name: user.name, lastname: user.lastname },
         receiver: { id: receiverId },
         message: data.sendMessage.message,
-        timestamp: data.sendMessage.timestamp,  // Assuming this is already correctly formatted
+        timestamp: new Date().toISOString(),  // Ensure the timestamp is correctly formatted
       };
 
+      console.log('New message created:', newMessage);
+
+      // Emit the message via socket
       socket.emit('sendMessage', newMessage);
 
+      // Update the local state to include the new message
       setThreads((prevThreads) => {
         const updatedThreads = { ...prevThreads };
         if (!updatedThreads[receiverId]) {
@@ -129,3 +150,4 @@ export const ChatProvider = ({ children }) => {
     </ChatContext.Provider>
   );
 };
+
