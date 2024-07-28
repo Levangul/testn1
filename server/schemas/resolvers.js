@@ -133,7 +133,7 @@ const resolvers = {
         sender: user._id,
         receiver: receiverId,
         message,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString(), // Ensure this is correctly set to the current date-time in ISO format
       });
     
       await newMessage.save();
