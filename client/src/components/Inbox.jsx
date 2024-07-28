@@ -7,7 +7,7 @@ import '../css/inbox.css';
 const Inbox = () => {
   const { user } = useAuth();
   const { receiverId, threads, loading, error, refetch } = useChat();
-  const [selectedUserId, setSelectedUserId] = useState(receiverId);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -20,7 +20,9 @@ const Inbox = () => {
   };
 
   useEffect(() => {
-    setSelectedUserId(receiverId);
+    if (receiverId) {
+      setSelectedUserId(receiverId);
+    }
   }, [receiverId]);
 
   if (loading) return <p>Loading...</p>;
@@ -40,7 +42,7 @@ const Inbox = () => {
         ))}
       </div>
       <div className="chat-area">
-        {selectedThread ? (
+        {selectedUserId ? (
           <ChatThread thread={selectedThread} onBack={() => setSelectedUserId(null)} />
         ) : (
           <p>Select a user to view the chat</p>
@@ -51,4 +53,3 @@ const Inbox = () => {
 };
 
 export default Inbox;
-

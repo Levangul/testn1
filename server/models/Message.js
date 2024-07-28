@@ -5,13 +5,12 @@ const messageSchema = new mongoose.Schema({
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     message: { type: String, required: true },
     timestamp: { type: Date, default: Date.now },
+    read: { type: Boolean, default: false } // Add the read field
 });
-
 
 messageSchema.virtual('id').get(function() {
     return this._id.toHexString();
 });
-
 
 messageSchema.set('toJSON', {
     virtuals: true,

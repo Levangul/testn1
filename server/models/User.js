@@ -39,6 +39,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  friends: [
+    {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    },
+],
 });
 
 // Add a method to hash the password before saving the user

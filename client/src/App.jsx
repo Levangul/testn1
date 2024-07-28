@@ -8,7 +8,7 @@ import { ChatProvider } from './context/ChatContext';
 import Header from './components/Header';
 import SearchUser from './components/SearchUser';
 import cache from './utils/cache';
-
+import Chat from './components/ChatComponent'
 const httpLink = createHttpLink({
   uri: 'http://localhost:3001/graphql', 
 });
@@ -36,6 +36,7 @@ function App() {
           <Header />
           <SearchUser />
           <Outlet />
+          <Chat />
         </ChatProvider>
       </AuthProvider>
     </ApolloProvider>

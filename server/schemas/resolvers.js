@@ -129,9 +129,6 @@ const resolvers = {
     sendMessage: async (_, { receiverId, message }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to send messages');
     
-      console.log("Sender ID:", user._id); 
-      console.log("Receiver ID:", receiverId); 
-    
       const newMessage = new Message({
         sender: user._id,
         receiver: receiverId,
@@ -143,7 +140,20 @@ const resolvers = {
     
       return newMessage.populate('sender receiver');
     },
-    
+    markMessagesAsRead: async (_, { receiverId }, { user }) => {
+      if (!user) throw new AuthenticationError("You must be logged in");
+
+      try {
+        await Message.updateMany(
+          { sender: receiverId, receiver: user._id, read: false },
+          { $set: { read: true } }
+        );
+        return true;
+      } catch (error) {
+        console.error("Error marking messages as read:", error);
+        return false;
+      }
+    },
     removeComment: async (parent, { commentId }, context) => {
       if (context.user) {
         const comment = await Comment.findById(commentId);
@@ -154,11 +164,32 @@ const resolvers = {
         throw new AuthenticationError('You do not have permission to delete this comment.');
       }
       throw new AuthenticationError('You need to be logged in!');
+    },
+    addFriend: async (_, { friendId }, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to add friends');
+      const friend = await User.findById(friendId);
+      if (!friend) throw new Error('User not found');
+
+      await User.findByIdAndUpdate(user._id, { $addToSet: { friends: friendId } });
+      await User.findByIdAndUpdate(friendId, { $addToSet: { friends: user._id } });
+
+      return friend;
+    },
+    removeFriend: async (_, { friendId }, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to remove friends');
+      const friend = await User.findById(friendId);
+      if (!friend) throw new Error('User not found');
+
+      await User.findByIdAndUpdate(user._id, { $pull: { friends: friendId } });
+      await User.findByIdAndUpdate(friendId, { $pull: { friends: user._id } });
+
+      return friend;
     }
   },
 
   User: {
-    posts: async (user) => await Post.find({ author: user._id }).sort({ date: -1 })
+    posts: async (user) => await Post.find({ author: user._id }).sort({ date: -1 }),
+    friends: async (user) => await User.find({ _id: { $in: user.friends } })
   },
   Post: {
     author: async (post) => await User.findById(post.author),
@@ -175,4 +206,3 @@ const resolvers = {
 };
 
 module.exports = resolvers;
-

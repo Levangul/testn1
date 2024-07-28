@@ -37,7 +37,6 @@ app.use(cors(corsOptions));
 // Create HTTP server
 const httpServer = http.createServer(app);
 
-// Configure Socket.io
 const io = new Server(httpServer, {
   cors: corsOptions,
 });
@@ -53,8 +52,8 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', async ({ senderId, receiverId, message }) => {
     console.log('Message received to send:', { senderId, receiverId, message });
     try {
-      if (!receiverId) {
-        console.error('Error: receiverId is undefined');
+      if (!receiverId || !senderId) {
+        console.error('Error: receiverId or senderId is undefined');
         return;
       }
 
@@ -62,15 +61,21 @@ io.on('connection', (socket) => {
         sender: senderId,
         receiver: receiverId,
         message: message,
+        timestamp: Date.now(),
       });
       await chatMessage.save();
 
       const responseMessage = {
         id: chatMessage.id,
-        senderId,
-        receiverId,
+        sender: {
+          id: senderId,
+        },
+        receiver: {
+          id: receiverId,
+        },
         message,
         timestamp: chatMessage.timestamp,
+        read: false,
       };
 
       console.log('Message saved, emitting to receiver and sender:', responseMessage);
@@ -86,6 +91,7 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 });
+
 
 
 // Configure Apollo Server

@@ -12,6 +12,7 @@ const typeDefs = gql`
     birthday: String
     aboutMe: String
     profilePicture: String
+    friends: [User]
   }
 
   type Post {
@@ -36,6 +37,7 @@ const typeDefs = gql`
     receiver: User
     message: String
     timestamp: String
+    read: Boolean!
   }
 
   type Auth {
@@ -63,6 +65,9 @@ const typeDefs = gql`
     removeComment(commentId: ID!): Comment
     updateUserInfo(city: String, birthday: String, aboutMe: String, profilePicture: String): User
     sendMessage(receiverId: ID!, message: String!): Message
+    markMessagesAsRead(receiverId: ID!): Boolean
+    addFriend(friendId: ID!): User
+    removeFriend(friendId: ID!): User
   }
 `;
 

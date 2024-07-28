@@ -1,7 +1,5 @@
 import { gql } from '@apollo/client';
 
-
-
 export const GET_USER = gql`
   query getUser($name: String!, $lastname: String!) {
     user(name: $name, lastname: $lastname) {
@@ -13,6 +11,12 @@ export const GET_USER = gql`
       birthday
       aboutMe
       profilePicture
+      friends {
+        id
+        name
+        lastname
+        profilePicture
+      }
       posts {
         id
         text
@@ -25,6 +29,7 @@ export const GET_USER = gql`
         comments {
           id
           text
+          date
           author {
             id
             name
@@ -35,8 +40,6 @@ export const GET_USER = gql`
     }
   }
 `;
-
-
 
 export const SEARCH_USER = gql`
   query searchUser($name: String!, $lastname: String!) {
@@ -65,11 +68,10 @@ export const GET_MESSAGES = gql`
       }
       message
       timestamp
+      read
     }
   }
 `;
-
-
 
 export const GET_POSTS = gql`
   query getPosts {
@@ -85,6 +87,7 @@ export const GET_POSTS = gql`
       comments {
         id
         text
+        date
         author {
           id
           name
