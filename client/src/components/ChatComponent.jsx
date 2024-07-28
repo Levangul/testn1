@@ -3,12 +3,11 @@ import { useMutation } from '@apollo/client';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import { SEND_MESSAGE } from '../utils/mutations';
-import dayjs from 'dayjs';
 import '../css/chat.css';
 
 const ChatComponent = () => {
   const { user } = useAuth();
-  const { receiverId, threads, isProfileChatOpen, closeProfileChat, sendMessage } = useChat();
+  const { receiverId, threads, isProfileChatOpen, closeProfileChat, sendMessage, formatTimestamp } = useChat();
   const [message, setMessage] = useState('');
   const [sendMessageMutation] = useMutation(SEND_MESSAGE);
 
@@ -37,7 +36,7 @@ const ChatComponent = () => {
         {messages.map((msg) => (
           <div key={msg.id}>
             <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-            <p><small>{dayjs(msg.timestamp).format('YYYY-MM-DD HH:mm:ss')}</small></p>
+            <p><small>{formatTimestamp(msg.timestamp)}</small></p>
           </div>
         ))}
       </div>
@@ -56,13 +55,5 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
-
-
-
-
-
-
-
-
 
 

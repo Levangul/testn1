@@ -2,16 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { useMutation } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
-import io from 'socket.io-client';
-import { SEND_MESSAGE } from "../utils/mutations"
-import dayjs from 'dayjs';
+import { SEND_MESSAGE } from "../utils/mutations";
 import '../css/chatThread.css';
-
-const socket = io(import.meta.env.VITE_API_URL);
 
 const ChatThread = ({ thread, onBack }) => {
   const { user } = useAuth();
-  const { openChatWithUser, sendMessage } = useChat();
+  const { openChatWithUser, sendMessage, formatTimestamp } = useChat();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(thread.messages);
   const [sendMessageMutation] = useMutation(SEND_MESSAGE);
@@ -30,20 +26,8 @@ const ChatThread = ({ thread, onBack }) => {
   }, [thread]);
 
   useEffect(() => {
-    if (thread && thread.user) {
-      const handleReceiveMessage = (newMessage) => {
-        if (newMessage.sender.id === thread.user.id || newMessage.receiver.id === thread.user.id) {
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
-        }
-      };
-
-      socket.on('receiveMessage', handleReceiveMessage);
-
-      return () => {
-        socket.off('receiveMessage');
-      };
-    }
-  }, [thread]);
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (message.trim() && thread.user.id !== user.id) {
@@ -62,10 +46,6 @@ const ChatThread = ({ thread, onBack }) => {
       messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
     }
   };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   if (!thread || !thread.user) {
     return (
@@ -88,7 +68,8 @@ const ChatThread = ({ thread, onBack }) => {
                 <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
               </p>
               <p>
-                <small>{dayjs(msg.timestamp).format('YYYY-MM-DD HH:mm:ss')}</small></p>
+                <small>{formatTimestamp(msg.timestamp)}</small>
+              </p>
             </div>
           ))}
         </div>
@@ -108,5 +89,6 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
+
 
 
