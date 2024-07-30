@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
-import { SEND_MESSAGE } from '../utils/mutations';
 import '../css/chat.css';
 
 const ChatComponent = () => {
   const { user } = useAuth();
   const { receiverId, threads, isProfileChatOpen, closeProfileChat, sendMessage, formatTimestamp } = useChat();
   const [message, setMessage] = useState('');
-  const [sendMessageMutation] = useMutation(SEND_MESSAGE);
 
   const messages = receiverId ? threads[receiverId]?.messages || [] : [];
 
   const handleSendMessage = async () => {
     if (message.trim() && receiverId && receiverId !== user.id) {
-      await sendMessage(receiverId, message.trim(), sendMessageMutation);
+      await sendMessage(receiverId, message.trim());
       setMessage('');
     } else {
       console.error('Cannot send message to self or empty message');
@@ -55,5 +52,3 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
-
-

@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useMutation } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
-import { SEND_MESSAGE } from "../utils/mutations";
 import '../css/chatThread.css';
 
 const ChatThread = ({ thread, onBack }) => {
@@ -10,7 +8,6 @@ const ChatThread = ({ thread, onBack }) => {
   const { openChatWithUser, sendMessage, formatTimestamp } = useChat();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(thread.messages);
-  const [sendMessageMutation] = useMutation(SEND_MESSAGE);
   const messageListRef = useRef(null);
 
   useEffect(() => {
@@ -32,7 +29,7 @@ const ChatThread = ({ thread, onBack }) => {
   const handleSendMessage = async () => {
     if (message.trim() && thread.user.id !== user.id) {
       try {
-        await sendMessage(thread.user.id, message.trim(), sendMessageMutation);
+        await sendMessage(thread.user.id, message.trim());
         setMessage('');
       } catch (error) {
         console.error('Error sending message:', error);
@@ -89,6 +86,3 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
-
-
-

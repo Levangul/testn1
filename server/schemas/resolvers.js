@@ -126,19 +126,24 @@ const resolvers = {
 
       return updatedUser;
     },
-    sendMessage: async (_, { receiverId, message }, { user }) => {
+    sendMessage: async (_, { receiverId, message }, { user, io }) => {
       if (!user) throw new AuthenticationError('You must be logged in to send messages');
-    
+
       const newMessage = new Message({
         sender: user._id,
         receiver: receiverId,
         message,
-        timestamp: new Date().toISOString(), // Ensure this is correctly set to the current date-time in ISO format
+        timestamp: new Date().toISOString(),
       });
-    
+
       await newMessage.save();
-    
-      return newMessage.populate('sender receiver');
+      await newMessage.populate('sender receiver');
+
+      // Emit message via socket.io
+      io.to(receiverId).emit('receiveMessage', newMessage);
+      io.to(user._id).emit('receiveMessage', newMessage);
+
+      return newMessage;
     },
     markMessagesAsRead: async (_, { receiverId }, { user }) => {
       if (!user) throw new AuthenticationError("You must be logged in");

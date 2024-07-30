@@ -37,6 +37,7 @@ app.use(cors(corsOptions));
 // Create HTTP server
 const httpServer = http.createServer(app);
 
+// Configure Socket.io
 const io = new Server(httpServer, {
   cors: corsOptions,
 });
@@ -49,56 +50,19 @@ io.on('connection', (socket) => {
     socket.join(userId);
   });
 
-  socket.on('sendMessage', async ({ senderId, receiverId, message }) => {
-    console.log('Message received to send:', { senderId, receiverId, message });
-    try {
-      if (!receiverId || !senderId) {
-        console.error('Error: receiverId or senderId is undefined');
-        return;
-      }
-
-      const chatMessage = new Message({
-        sender: senderId,
-        receiver: receiverId,
-        message: message,
-        timestamp: Date.now(),
-      });
-      await chatMessage.save();
-
-      const responseMessage = {
-        id: chatMessage.id,
-        sender: {
-          id: senderId,
-        },
-        receiver: {
-          id: receiverId,
-        },
-        message,
-        timestamp: chatMessage.timestamp,
-        read: false,
-      };
-
-      console.log('Message saved, emitting to receiver and sender:', responseMessage);
-
-      io.to(receiverId).emit('receiveMessage', responseMessage);
-      io.to(senderId).emit('receiveMessage', responseMessage);
-    } catch (error) {
-      console.error('Error in sendMessage event:', error);
-    }
-  });
-
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
 });
 
-
-
 // Configure Apollo Server
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req }) => authMiddleware({ req }),
+  context: ({ req }) => ({
+    ...authMiddleware({ req }),
+    io
+  }),
 });
 
 const startApolloServer = async () => {
@@ -108,7 +72,10 @@ const startApolloServer = async () => {
     app.use(
       "/graphql",
       expressMiddleware(apolloServer, {
-        context: ({ req }) => authMiddleware({ req }),
+        context: ({ req }) => ({
+          ...authMiddleware({ req }),
+          io
+        }),
       })
     );
 

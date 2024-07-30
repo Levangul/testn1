@@ -1,9 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { GET_MESSAGES } from "../utils/queries";
+import { SEND_MESSAGE } from "../utils/mutations";
 import io from 'socket.io-client';
 import { useAuth } from "../context/AuthContext";
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const ChatContext = createContext();
 
@@ -14,12 +20,13 @@ const socket = io(import.meta.env.VITE_API_URL);
 export const ChatProvider = ({ children }) => {
   const { user } = useAuth();
   const { loading, error, data, refetch } = useQuery(GET_MESSAGES, { skip: !user });
+  const [sendMessageMutation] = useMutation(SEND_MESSAGE);
   const [receiverId, setReceiverId] = useState(null);
   const [isProfileChatOpen, setIsProfileChatOpen] = useState(false);
   const [threads, setThreads] = useState({});
   const [unreadUsers, setUnreadUsers] = useState(new Set());
 
-  const formatTimestamp = (timestamp) => dayjs(timestamp).format('MMMM D HH:mm');
+  const formatTimestamp = (timestamp) => dayjs(timestamp).tz(dayjs.tz.guess()).format('MMMM D YYYY HH:mm');
 
   const updateThreads = useCallback((messages) => {
     const updatedThreads = {};
@@ -32,7 +39,7 @@ export const ChatProvider = ({ children }) => {
       }
       updatedThreads[otherUser.id].messages.push({
         ...msg,
-        timestamp: dayjs(msg.timestamp).toISOString() // Ensure the timestamp is formatted
+        timestamp: dayjs(msg.timestamp).toISOString() // Ensure the timestamp is formatted correctly
       });
       if (msg.sender.id !== user.id && !msg.read) {
         updatedThreads[otherUser.id].unread = true;
@@ -41,7 +48,7 @@ export const ChatProvider = ({ children }) => {
     });
 
     Object.values(updatedThreads).forEach((thread) => {
-      thread.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      thread.messages.sort((a, b) => dayjs(a.timestamp).diff(dayjs(b.timestamp)));
     });
 
     setThreads(updatedThreads);
@@ -75,7 +82,7 @@ export const ChatProvider = ({ children }) => {
           }
           if (!updatedThreads[otherUser.id].messages.find(msg => msg.id === newMessage.id)) {
             updatedThreads[otherUser.id].messages.push(newMessage);
-            updatedThreads[otherUser.id].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            updatedThreads[otherUser.id].messages.sort((a, b) => dayjs(a.timestamp).diff(dayjs(b.timestamp)));
           }
           return updatedThreads;
         });
@@ -101,7 +108,7 @@ export const ChatProvider = ({ children }) => {
     setIsProfileChatOpen(false);
   };
 
-  const sendMessage = async (receiverId, message, sendMessageMutation) => {
+  const sendMessage = async (receiverId, message) => {
     if (!user || !receiverId) {
       console.error('Error: senderId or receiverId is undefined', { senderId: user?.id, receiverId });
       return;
@@ -119,7 +126,8 @@ export const ChatProvider = ({ children }) => {
         sender: { id: user.id, name: user.name, lastname: user.lastname },
         receiver: { id: receiverId },
         message: data.sendMessage.message,
-        timestamp: new Date().toISOString(),  // Ensure the timestamp is correctly formatted
+        timestamp: dayjs().toISOString(),  // Ensure the timestamp is correctly formatted
+        read: false // Ensure read status is included
       };
 
       console.log('New message created:', newMessage);
@@ -135,12 +143,13 @@ export const ChatProvider = ({ children }) => {
         }
         if (!updatedThreads[receiverId].messages.find(msg => msg.id === newMessage.id)) {
           updatedThreads[receiverId].messages.push(newMessage);
-          updatedThreads[receiverId].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          updatedThreads[receiverId].messages.sort((a, b) => dayjs(a.timestamp).diff(dayjs(b.timestamp)));
         }
         return updatedThreads;
       });
     } catch (error) {
       console.error('Error sending message:', error);
+      throw new Error('Error sending message');
     }
   };
 
@@ -150,4 +159,3 @@ export const ChatProvider = ({ children }) => {
     </ChatContext.Provider>
   );
 };
-
