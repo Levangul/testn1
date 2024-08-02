@@ -36,7 +36,7 @@ const typeDefs = gql`
     sender: User
     receiver: User
     message: String
-    timestamp: String
+    timestamp: String!
     read: Boolean!
   }
 

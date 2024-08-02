@@ -50,10 +50,31 @@ io.on('connection', (socket) => {
     socket.join(userId);
   });
 
+  socket.on('sendMessage', async ({ senderId, receiverId, message }) => {
+    try {
+      const newMessage = new Message({
+        sender: senderId,
+        receiver: receiverId,
+        message,
+        timestamp: Date.now(),
+      });
+  
+      await newMessage.save();
+      await newMessage.populate('sender receiver');
+  
+      io.to(receiverId).emit('receiveMessage', newMessage);
+      io.to(senderId).emit('receiveMessage', newMessage);
+    } catch (error) {
+      console.error('Error sending message via Socket.IO:', error);
+    }
+  });
+  
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
 });
+
 
 // Configure Apollo Server
 const apolloServer = new ApolloServer({

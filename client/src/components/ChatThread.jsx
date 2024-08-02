@@ -5,7 +5,7 @@ import '../css/chatThread.css';
 
 const ChatThread = ({ thread, onBack }) => {
   const { user } = useAuth();
-  const { openChatWithUser, sendMessage, formatTimestamp } = useChat();
+  const { openChatWithUser, sendMessageViaSocket, formatTimestamp, closeProfileChat, closeThreadChat } = useChat(); // Close other chat component
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(thread.messages);
   const messageListRef = useRef(null);
@@ -13,8 +13,9 @@ const ChatThread = ({ thread, onBack }) => {
   useEffect(() => {
     if (thread && thread.user) {
       openChatWithUser(thread.user.id);
+      closeProfileChat(); // Ensure that profile chat is closed when thread is open
     }
-  }, [thread, openChatWithUser]);
+  }, [thread, openChatWithUser, closeProfileChat]);
 
   useEffect(() => {
     if (thread && thread.messages) {
@@ -26,15 +27,10 @@ const ChatThread = ({ thread, onBack }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (message.trim() && thread.user.id !== user.id) {
-      try {
-        await sendMessage(thread.user.id, message.trim());
-        setMessage('');
-      } catch (error) {
-        console.error('Error sending message:', error);
-        alert('Failed to send message. Please try again.');
-      }
+      sendMessageViaSocket(thread.user.id, message.trim());
+      setMessage('');
     }
   };
 
@@ -47,7 +43,7 @@ const ChatThread = ({ thread, onBack }) => {
   if (!thread || !thread.user) {
     return (
       <div className="chat-thread">
-        <button onClick={onBack}>Back to Inbox</button>
+        <button onClick={() => { closeThreadChat(); onBack(); }}>Back to Inbox</button>
         <p>Select a user to start a conversation</p>
       </div>
     );
@@ -56,7 +52,7 @@ const ChatThread = ({ thread, onBack }) => {
   return (
     <div className="chat-thread-container">
       <div className="chat-thread">
-        <button onClick={onBack}>Back to Inbox</button>
+        <button onClick={() => { closeThreadChat(); onBack(); }}>Back to Inbox</button>
         <h3>Chat with {thread.user.name} {thread.user.lastname}</h3>
         <div className="message-list" ref={messageListRef}>
           {messages.map((msg) => (
@@ -86,3 +82,4 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
+

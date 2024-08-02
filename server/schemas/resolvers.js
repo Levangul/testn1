@@ -19,13 +19,15 @@ const resolvers = {
     },
     messages: async (_, __, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to view messages');
+    
       return await Message.find({ 
         $or: [
           { sender: user._id },
           { receiver: user._id }
         ]
-      }).sort({ timestamp: -1 }).populate('sender receiver');
+      }).populate('sender receiver');
     },
+    
   },
   Mutation: {
     addUser: async (parent, { name, lastname, email, password }) => {
@@ -126,25 +128,6 @@ const resolvers = {
 
       return updatedUser;
     },
-    sendMessage: async (_, { receiverId, message }, { user, io }) => {
-      if (!user) throw new AuthenticationError('You must be logged in to send messages');
-
-      const newMessage = new Message({
-        sender: user._id,
-        receiver: receiverId,
-        message,
-        timestamp: new Date().toISOString(),
-      });
-
-      await newMessage.save();
-      await newMessage.populate('sender receiver');
-
-      // Emit message via socket.io
-      io.to(receiverId).emit('receiveMessage', newMessage);
-      io.to(user._id).emit('receiveMessage', newMessage);
-
-      return newMessage;
-    },
     markMessagesAsRead: async (_, { receiverId }, { user }) => {
       if (!user) throw new AuthenticationError("You must be logged in");
 
@@ -204,10 +187,6 @@ const resolvers = {
     author: async (comment) => await User.findById(comment.author),
     post: async (comment) => await Post.findById(comment.post)
   },
-  Message: {
-    sender: async (message) => await User.findById(message.sender),
-    receiver: async (message) => await User.findById(message.receiver),
-  }
 };
 
 module.exports = resolvers;

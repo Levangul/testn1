@@ -5,14 +5,14 @@ import '../css/chat.css';
 
 const ChatComponent = () => {
   const { user } = useAuth();
-  const { receiverId, threads, isProfileChatOpen, closeProfileChat, sendMessage, formatTimestamp } = useChat();
+  const { receiverId, threads, isProfileChatOpen, closeProfileChat, closeThreadChat, sendMessageViaSocket, formatTimestamp } = useChat();
   const [message, setMessage] = useState('');
 
   const messages = receiverId ? threads[receiverId]?.messages || [] : [];
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (message.trim() && receiverId && receiverId !== user.id) {
-      await sendMessage(receiverId, message.trim());
+      sendMessageViaSocket(receiverId, message.trim());
       setMessage('');
     } else {
       console.error('Cannot send message to self or empty message');
@@ -27,7 +27,7 @@ const ChatComponent = () => {
     <div className="chat-container">
       <div className="chat-header">
         <h2>Chat with {receiverId}</h2>
-        <button onClick={closeProfileChat}>Close</button>
+        <button onClick={() => { closeProfileChat(); closeThreadChat(); }}>Close</button>
       </div>
       <div className="chat-messages">
         {messages.map((msg) => (

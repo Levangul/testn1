@@ -51,26 +51,26 @@ export const ADD_POST = gql`
   }
 `;
 
-export const SEND_MESSAGE = gql`
-  mutation sendMessage($receiverId: ID!, $message: String!) {
-    sendMessage(receiverId: $receiverId, message: $message) {
-      id
-      sender {
-        id
-        name
-        lastname
-      }
-      receiver {
-        id
-        name
-        lastname
-      }
-      message
-      timestamp
-      read
-    }
-  }
-`;
+// export const SEND_MESSAGE = gql`
+//   mutation sendMessage($receiverId: ID!, $message: String!) {
+//     sendMessage(receiverId: $receiverId, message: $message) {
+//       id
+//       sender {
+//         id
+//         name
+//         lastname
+//       }
+//       receiver {
+//         id
+//         name
+//         lastname
+//       }
+//       message
+//       timestamp
+//       read
+//     }
+//   }
+// `;
 
 export const MARK_MESSAGES_AS_READ = gql`
   mutation markMessagesAsRead($receiverId: ID!) {
