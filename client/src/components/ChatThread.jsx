@@ -5,15 +5,15 @@ import '../css/chatThread.css';
 
 const ChatThread = ({ thread, onBack }) => {
   const { user } = useAuth();
-  const { openChatWithUser, sendMessageViaSocket, formatTimestamp, closeProfileChat, closeThreadChat } = useChat(); // Close other chat component
+  const { openChatWithUser, sendMessageViaSocket, closeProfileChat, closeThreadChat } = useChat(); 
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState(thread.messages);
+  const [messages, setMessages] = useState(thread ? thread.messages : []); // Initialize with an empty array
   const messageListRef = useRef(null);
 
   useEffect(() => {
     if (thread && thread.user) {
       openChatWithUser(thread.user.id);
-      closeProfileChat(); // Ensure that profile chat is closed when thread is open
+      closeProfileChat(); 
     }
   }, [thread, openChatWithUser, closeProfileChat]);
 
@@ -28,7 +28,7 @@ const ChatThread = ({ thread, onBack }) => {
   }, [messages]);
 
   const handleSendMessage = () => {
-    if (message.trim() && thread.user.id !== user.id) {
+    if (message.trim() && thread?.user?.id !== user.id) {
       sendMessageViaSocket(thread.user.id, message.trim());
       setMessage('');
     }
@@ -55,16 +55,17 @@ const ChatThread = ({ thread, onBack }) => {
         <button onClick={() => { closeThreadChat(); onBack(); }}>Back to Inbox</button>
         <h3>Chat with {thread.user.name} {thread.user.lastname}</h3>
         <div className="message-list" ref={messageListRef}>
-          {messages.map((msg) => (
-            <div key={msg.id} className="message">
-              <p>
-                <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-              </p>
-              <p>
-                <small>{formatTimestamp(msg.timestamp)}</small>
-              </p>
-            </div>
-          ))}
+          {messages && messages.length > 0 ? (
+            messages.map((msg) => (
+              <div key={msg.id} className="message">
+                <p>
+                  <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p>No messages yet</p>
+          )}
         </div>
         <div className="send-message">
           <input
@@ -82,4 +83,3 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
-

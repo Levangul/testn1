@@ -157,3 +157,37 @@ export const REMOVE_FRIEND = gql`
     }
   }
 `;
+
+export const SEND_FRIEND_REQUEST = gql`
+  mutation sendFriendRequest($friendId: ID!) {
+    sendFriendRequest(friendId: $friendId) {
+      id
+      name
+      lastname
+      profilePicture
+    }
+  }
+`;
+
+export const ACCEPT_FRIEND_REQUEST = gql`
+  mutation acceptFriendRequest($friendId: ID!) {
+    acceptFriendRequest(friendId: $friendId) {
+      id
+      name
+      lastname
+      profilePicture
+      friends {
+        id
+        name
+        lastname
+        profilePicture
+      }
+    }
+  }
+`;
+
+export const REJECT_FRIEND_REQUEST = gql`
+  mutation rejectFriendRequest($friendId: ID!) {
+    rejectFriendRequest(friendId: $friendId)
+  }
+`;

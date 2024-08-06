@@ -19,21 +19,20 @@ const resolvers = {
     },
     messages: async (_, __, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to view messages');
-    
-      return await Message.find({ 
+
+      return await Message.find({
         $or: [
           { sender: user._id },
           { receiver: user._id }
         ]
       }).populate('sender receiver');
     },
-    
   },
   Mutation: {
     addUser: async (parent, { name, lastname, email, password }) => {
       try {
         const user = await User.create({ name, lastname, email, password });
-        const token = signToken({ email: user.email, name: user.name, lastname: user.lastname, _id: user._id });
+        const token = signToken({ email: user.email, name: user.name, lastname: user.lastname, _id: user._id.toString() });
         return { token, user };
       } catch (err) {
         if (err.code === 11000) {
@@ -57,7 +56,7 @@ const resolvers = {
         throw new AuthenticationError("Incorrect password");
       }
 
-      const token = signToken({ email: user.email, name: user.name, lastname: user.lastname, _id: user._id });
+      const token = signToken({ email: user.email, name: user.name, lastname: user.lastname, _id: user._id.toString() });
 
       return { token, user };
     },
@@ -73,9 +72,6 @@ const resolvers = {
       await newPost.save();
 
       const dbUser = await User.findById(user._id);
-      if (!dbUser.posts) {
-        dbUser.posts = [];
-      }
       dbUser.posts.push(newPost._id);
       await dbUser.save();
 
@@ -95,10 +91,6 @@ const resolvers = {
       });
 
       await newComment.save();
-
-      if (!post.comments) {
-        post.comments = [];
-      }
 
       post.comments.push(newComment._id);
       await post.save();
@@ -153,39 +145,75 @@ const resolvers = {
       }
       throw new AuthenticationError('You need to be logged in!');
     },
-    addFriend: async (_, { friendId }, { user }) => {
-      if (!user) throw new AuthenticationError('You must be logged in to add friends');
+    sendFriendRequest: async (_, { friendId }, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to send a friend request');
+
       const friend = await User.findById(friendId);
       if (!friend) throw new Error('User not found');
 
-      await User.findByIdAndUpdate(user._id, { $addToSet: { friends: friendId } });
-      await User.findByIdAndUpdate(friendId, { $addToSet: { friends: user._id } });
+      if (friend.friendRequests.includes(user._id.toString())) {
+        throw new Error('Friend request already sent');
+      }
+
+      friend.friendRequests.push(user._id.toString());
+      await friend.save();
 
       return friend;
+    },
+    acceptFriendRequest: async (_, { friendId }, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to accept a friend request');
+
+      const friend = await User.findById(friendId);
+      if (!friend) throw new Error('User not found');
+
+      if (!user.friendRequests.map(id => id.toString()).includes(friendId.toString())) {
+        throw new Error('No friend request found');
+      }
+
+      user.friendRequests = user.friendRequests.filter(id => id.toString() !== friendId.toString());
+      user.friends.push(friendId.toString());
+      friend.friends.push(user._id.toString());
+
+      await user.save();
+      await friend.save();
+
+      return friend;
+    },
+    rejectFriendRequest: async (_, { friendId }, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to reject a friend request');
+
+      if (!user.friendRequests.map(id => id.toString()).includes(friendId.toString())) {
+        throw new Error('No friend request found');
+      }
+
+      user.friendRequests = user.friendRequests.filter(id => id.toString() !== friendId.toString());
+      await user.save();
+
+      return true;
     },
     removeFriend: async (_, { friendId }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to remove friends');
       const friend = await User.findById(friendId);
       if (!friend) throw new Error('User not found');
 
-      await User.findByIdAndUpdate(user._id, { $pull: { friends: friendId } });
-      await User.findByIdAndUpdate(friendId, { $pull: { friends: user._id } });
+      await User.findByIdAndUpdate(user._id, { $pull: { friends: friendId.toString() } });
+      await User.findByIdAndUpdate(friendId, { $pull: { friends: user._id.toString() } });
 
       return friend;
     }
   },
-
   User: {
     posts: async (user) => await Post.find({ author: user._id }).sort({ date: -1 }),
-    friends: async (user) => await User.find({ _id: { $in: user.friends } })
+    friends: async (user) => await User.find({ _id: { $in: user.friends.map(id => id.toString()) } }),
+    friendRequests: async (user) => await User.find({ _id: { $in: user.friendRequests.map(id => id.toString()) } }),
   },
   Post: {
-    author: async (post) => await User.findById(post.author),
-    comments: async (post) => await Comment.find({ post: post._id }).sort({ date: -1 })
+    author: async (post) => await User.findById(post.author.toString()),
+    comments: async (post) => await Comment.find({ post: post._id.toString() }).sort({ date: -1 })
   },
   Comment: {
-    author: async (comment) => await User.findById(comment.author),
-    post: async (comment) => await Post.findById(comment.post)
+    author: async (comment) => await User.findById(comment.author.toString()),
+    post: async (comment) => await Post.findById(comment.post.toString())
   },
 };
 

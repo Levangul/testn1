@@ -13,6 +13,7 @@ const typeDefs = gql`
     aboutMe: String
     profilePicture: String
     friends: [User]
+    friendRequests: [User]
   }
 
   type Post {
@@ -36,7 +37,7 @@ const typeDefs = gql`
     sender: User
     receiver: User
     message: String
-    timestamp: String!
+    date: String!
     read: Boolean!
   }
 
@@ -68,6 +69,9 @@ const typeDefs = gql`
     markMessagesAsRead(receiverId: ID!): Boolean
     addFriend(friendId: ID!): User
     removeFriend(friendId: ID!): User
+    sendFriendRequest(friendId: ID!): User
+    acceptFriendRequest(friendId: ID!): User
+    rejectFriendRequest(friendId: ID!): Boolean
   }
 `;
 

@@ -33,7 +33,7 @@ const ChatComponent = () => {
         {messages.map((msg) => (
           <div key={msg.id}>
             <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-            <p><small>{formatTimestamp(msg.timestamp)}</small></p>
+            <p><small>{("date")}</small></p>
           </div>
         ))}
       </div>

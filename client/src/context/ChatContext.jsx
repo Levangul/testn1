@@ -25,35 +25,31 @@ export const ChatProvider = ({ children }) => {
   const [threads, setThreads] = useState({});
   const [unreadUsers, setUnreadUsers] = useState(new Set());
 
-  const formatTimestamp = (timestamp) => dayjs(timestamp).tz(dayjs.tz.guess()).format('MMMM D YYYY HH:mm');
+ 
 
 
   const updateThreads = useCallback((messages) => {
     const updatedThreads = {};
     const userSet = new Set();
-
+  
     messages.forEach((msg) => {
       const otherUser = msg.sender.id === user.id ? msg.receiver : msg.sender;
       if (!updatedThreads[otherUser.id]) {
         updatedThreads[otherUser.id] = { user: otherUser, messages: [], unread: false };
       }
-      updatedThreads[otherUser.id].messages.push({
-        ...msg,
-        timestamp: dayjs(msg.timestamp).toISOString() 
-      });
+      updatedThreads[otherUser.id].messages.push(msg);
       if (msg.sender.id !== user.id && !msg.read) {
         updatedThreads[otherUser.id].unread = true;
         userSet.add(otherUser.id);
       }
     });
-
-    Object.values(updatedThreads).forEach((thread) => {
-      thread.messages.sort((a, b) => dayjs(a.timestamp).diff(dayjs(b.timestamp)));
-    });
-
+  
     setThreads(updatedThreads);
     setUnreadUsers(userSet);
   }, [user]);
+  
+  // Make sure you remove timestamp references in other parts of the code as well
+  
 
   useEffect(() => {
     if (data && data.messages && user) {
@@ -64,29 +60,26 @@ export const ChatProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       socket.emit('join', { userId: user.id });
-   
+  
       const handleReceiveMessage = (newMessage) => {
-        newMessage.timestamp = dayjs(newMessage.timestamp).utc().toISOString();
-      
         setThreads((prevThreads) => {
           const updatedThreads = { ...prevThreads };
           const otherUser = newMessage.sender.id === user.id ? newMessage.receiver : newMessage.sender;
-      
+     
           if (!updatedThreads[otherUser.id]) {
             updatedThreads[otherUser.id] = { user: otherUser, messages: [], unread: true };
           }
           if (!updatedThreads[otherUser.id].messages.find(msg => msg.id === newMessage.id)) {
             updatedThreads[otherUser.id].messages.push(newMessage);
-            updatedThreads[otherUser.id].messages.sort((a, b) => dayjs(a.timestamp).diff(dayjs(b.timestamp)));
           }
           return updatedThreads;
         });
-      
+     
         setUnreadUsers((prevUsers) => new Set(prevUsers.add(newMessage.sender.id === user.id ? newMessage.receiver.id : newMessage.sender.id)));
       };
-   
+  
       socket.on('receiveMessage', handleReceiveMessage);
-   
+  
       return () => {
         socket.off('receiveMessage', handleReceiveMessage);
       };
@@ -112,17 +105,18 @@ export const ChatProvider = ({ children }) => {
       console.error('Error: senderId or receiverId is undefined', { senderId: user?.id, receiverId });
       return;
     }
-
-    // Emit the message via Socket.IO
+  
     socket.emit('sendMessage', {
       senderId: user.id,
       receiverId: receiverId,
       message: message,
+      // Remove timestamp from the message payload
     });
   };
+  
 
   return (
-    <ChatContext.Provider value={{ receiverId, setReceiverId, threads, loading, error, refetch, openChatWithUser, closeProfileChat, closeThreadChat, isProfileChatOpen, isThreadOpen, sendMessageViaSocket, formatTimestamp, socket }}>
+    <ChatContext.Provider value={{ receiverId, setReceiverId, threads, loading, error, refetch, openChatWithUser, closeProfileChat, closeThreadChat, isProfileChatOpen, isThreadOpen, sendMessageViaSocket, socket }}>
       {children}
     </ChatContext.Provider>
   );

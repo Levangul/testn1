@@ -56,7 +56,7 @@ io.on('connection', (socket) => {
         sender: senderId,
         receiver: receiverId,
         message,
-        timestamp: Date.now(),
+        
       });
   
       await newMessage.save();
