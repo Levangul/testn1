@@ -1,23 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useMutation } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
-import { SEND_MESSAGE } from "../utils/mutations";
 import '../css/chatThread.css';
 
 const ChatThread = ({ thread, onBack }) => {
   const { user } = useAuth();
-  const { openChatWithUser, sendMessage, formatTimestamp } = useChat();
+  const { openChatWithUser, sendMessageViaSocket, closeProfileChat, closeThreadChat } = useChat(); 
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState(thread.messages);
-  const [sendMessageMutation] = useMutation(SEND_MESSAGE);
+  const [messages, setMessages] = useState(thread ? thread.messages : []); // Initialize with an empty array
   const messageListRef = useRef(null);
 
   useEffect(() => {
     if (thread && thread.user) {
       openChatWithUser(thread.user.id);
+      closeProfileChat(); 
     }
-  }, [thread, openChatWithUser]);
+  }, [thread, openChatWithUser, closeProfileChat]);
 
   useEffect(() => {
     if (thread && thread.messages) {
@@ -29,15 +27,10 @@ const ChatThread = ({ thread, onBack }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (message.trim() && thread.user.id !== user.id) {
-      try {
-        await sendMessage(thread.user.id, message.trim(), sendMessageMutation);
-        setMessage('');
-      } catch (error) {
-        console.error('Error sending message:', error);
-        alert('Failed to send message. Please try again.');
-      }
+  const handleSendMessage = () => {
+    if (message.trim() && thread?.user?.id !== user.id) {
+      sendMessageViaSocket(thread.user.id, message.trim());
+      setMessage('');
     }
   };
 
@@ -50,7 +43,7 @@ const ChatThread = ({ thread, onBack }) => {
   if (!thread || !thread.user) {
     return (
       <div className="chat-thread">
-        <button onClick={onBack}>Back to Inbox</button>
+        <button onClick={() => { closeThreadChat(); onBack(); }}>Back to Inbox</button>
         <p>Select a user to start a conversation</p>
       </div>
     );
@@ -59,19 +52,20 @@ const ChatThread = ({ thread, onBack }) => {
   return (
     <div className="chat-thread-container">
       <div className="chat-thread">
-        <button onClick={onBack}>Back to Inbox</button>
+        <button onClick={() => { closeThreadChat(); onBack(); }}>Back to Inbox</button>
         <h3>Chat with {thread.user.name} {thread.user.lastname}</h3>
         <div className="message-list" ref={messageListRef}>
-          {messages.map((msg) => (
-            <div key={msg.id} className="message">
-              <p>
-                <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-              </p>
-              <p>
-                <small>{formatTimestamp(msg.timestamp)}</small>
-              </p>
-            </div>
-          ))}
+          {messages && messages.length > 0 ? (
+            messages.map((msg) => (
+              <div key={msg.id} className="message">
+                <p>
+                  <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p>No messages yet</p>
+          )}
         </div>
         <div className="send-message">
           <input
@@ -89,6 +83,3 @@ const ChatThread = ({ thread, onBack }) => {
 };
 
 export default ChatThread;
-
-
-

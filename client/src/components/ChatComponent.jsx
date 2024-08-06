@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
-import { SEND_MESSAGE } from '../utils/mutations';
 import '../css/chat.css';
 
 const ChatComponent = () => {
   const { user } = useAuth();
-  const { receiverId, threads, isProfileChatOpen, closeProfileChat, sendMessage, formatTimestamp } = useChat();
+  const { receiverId, threads, isProfileChatOpen, closeProfileChat, closeThreadChat, sendMessageViaSocket, formatTimestamp } = useChat();
   const [message, setMessage] = useState('');
-  const [sendMessageMutation] = useMutation(SEND_MESSAGE);
 
   const messages = receiverId ? threads[receiverId]?.messages || [] : [];
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (message.trim() && receiverId && receiverId !== user.id) {
-      await sendMessage(receiverId, message.trim(), sendMessageMutation);
+      sendMessageViaSocket(receiverId, message.trim());
       setMessage('');
     } else {
       console.error('Cannot send message to self or empty message');
@@ -30,13 +27,13 @@ const ChatComponent = () => {
     <div className="chat-container">
       <div className="chat-header">
         <h2>Chat with {receiverId}</h2>
-        <button onClick={closeProfileChat}>Close</button>
+        <button onClick={() => { closeProfileChat(); closeThreadChat(); }}>Close</button>
       </div>
       <div className="chat-messages">
         {messages.map((msg) => (
           <div key={msg.id}>
             <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-            <p><small>{formatTimestamp(msg.timestamp)}</small></p>
+            <p><small>{("date")}</small></p>
           </div>
         ))}
       </div>
@@ -55,5 +52,3 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
-
-

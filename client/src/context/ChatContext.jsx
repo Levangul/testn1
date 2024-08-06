@@ -4,6 +4,11 @@ import { GET_MESSAGES } from "../utils/queries";
 import io from 'socket.io-client';
 import { useAuth } from "../context/AuthContext";
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const ChatContext = createContext();
 
@@ -16,37 +21,35 @@ export const ChatProvider = ({ children }) => {
   const { loading, error, data, refetch } = useQuery(GET_MESSAGES, { skip: !user });
   const [receiverId, setReceiverId] = useState(null);
   const [isProfileChatOpen, setIsProfileChatOpen] = useState(false);
+  const [isThreadOpen, setIsThreadOpen] = useState(false);
   const [threads, setThreads] = useState({});
   const [unreadUsers, setUnreadUsers] = useState(new Set());
 
-  const formatTimestamp = (timestamp) => dayjs(timestamp).format('MMMM D HH:mm');
+ 
+
 
   const updateThreads = useCallback((messages) => {
     const updatedThreads = {};
     const userSet = new Set();
-
+  
     messages.forEach((msg) => {
       const otherUser = msg.sender.id === user.id ? msg.receiver : msg.sender;
       if (!updatedThreads[otherUser.id]) {
         updatedThreads[otherUser.id] = { user: otherUser, messages: [], unread: false };
       }
-      updatedThreads[otherUser.id].messages.push({
-        ...msg,
-        timestamp: dayjs(msg.timestamp).toISOString() // Ensure the timestamp is formatted
-      });
+      updatedThreads[otherUser.id].messages.push(msg);
       if (msg.sender.id !== user.id && !msg.read) {
         updatedThreads[otherUser.id].unread = true;
         userSet.add(otherUser.id);
       }
     });
-
-    Object.values(updatedThreads).forEach((thread) => {
-      thread.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    });
-
+  
     setThreads(updatedThreads);
     setUnreadUsers(userSet);
   }, [user]);
+  
+  // Make sure you remove timestamp references in other parts of the code as well
+  
 
   useEffect(() => {
     if (data && data.messages && user) {
@@ -57,33 +60,26 @@ export const ChatProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       socket.emit('join', { userId: user.id });
-
+  
       const handleReceiveMessage = (newMessage) => {
-        if (newMessage.sender.id === user.id) {
-          // If the message was sent by the user, skip handling it
-          return;
-        }
-
-        console.log('Received message timestamp:', newMessage.timestamp);
-        newMessage.timestamp = dayjs(newMessage.timestamp).toISOString(); // Ensure correct format
         setThreads((prevThreads) => {
           const updatedThreads = { ...prevThreads };
           const otherUser = newMessage.sender.id === user.id ? newMessage.receiver : newMessage.sender;
-
+     
           if (!updatedThreads[otherUser.id]) {
             updatedThreads[otherUser.id] = { user: otherUser, messages: [], unread: true };
           }
           if (!updatedThreads[otherUser.id].messages.find(msg => msg.id === newMessage.id)) {
             updatedThreads[otherUser.id].messages.push(newMessage);
-            updatedThreads[otherUser.id].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
           }
           return updatedThreads;
         });
+     
         setUnreadUsers((prevUsers) => new Set(prevUsers.add(newMessage.sender.id === user.id ? newMessage.receiver.id : newMessage.sender.id)));
       };
-
+  
       socket.on('receiveMessage', handleReceiveMessage);
-
+  
       return () => {
         socket.off('receiveMessage', handleReceiveMessage);
       };
@@ -92,60 +88,35 @@ export const ChatProvider = ({ children }) => {
 
   const openChatWithUser = async (userId, fromProfile = false) => {
     setReceiverId(userId);
-    if (fromProfile) {
-      setIsProfileChatOpen(true);
-    }
+    setIsProfileChatOpen(fromProfile);
+    setIsThreadOpen(!fromProfile); // Toggle based on which component is open
   };
 
   const closeProfileChat = () => {
     setIsProfileChatOpen(false);
   };
 
-  const sendMessage = async (receiverId, message, sendMessageMutation) => {
+  const closeThreadChat = () => {
+    setIsThreadOpen(false);
+  };
+
+  const sendMessageViaSocket = (receiverId, message) => {
     if (!user || !receiverId) {
       console.error('Error: senderId or receiverId is undefined', { senderId: user?.id, receiverId });
       return;
     }
-
-    try {
-      console.log('Sending message:', { senderId: user.id, receiverId, message });
-
-      const { data } = await sendMessageMutation({
-        variables: { receiverId, message },
-      });
-
-      const newMessage = {
-        id: data.sendMessage.id,
-        sender: { id: user.id, name: user.name, lastname: user.lastname },
-        receiver: { id: receiverId },
-        message: data.sendMessage.message,
-        timestamp: new Date().toISOString(),  // Ensure the timestamp is correctly formatted
-      };
-
-      console.log('New message created:', newMessage);
-
-      // Emit the message via socket
-      socket.emit('sendMessage', newMessage);
-
-      // Update the local state to include the new message
-      setThreads((prevThreads) => {
-        const updatedThreads = { ...prevThreads };
-        if (!updatedThreads[receiverId]) {
-          updatedThreads[receiverId] = { user: { id: receiverId }, messages: [] };
-        }
-        if (!updatedThreads[receiverId].messages.find(msg => msg.id === newMessage.id)) {
-          updatedThreads[receiverId].messages.push(newMessage);
-          updatedThreads[receiverId].messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        }
-        return updatedThreads;
-      });
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
+  
+    socket.emit('sendMessage', {
+      senderId: user.id,
+      receiverId: receiverId,
+      message: message,
+      // Remove timestamp from the message payload
+    });
   };
+  
 
   return (
-    <ChatContext.Provider value={{ receiverId, setReceiverId, threads, loading, error, refetch, openChatWithUser, closeProfileChat, isProfileChatOpen, sendMessage, formatTimestamp, socket }}>
+    <ChatContext.Provider value={{ receiverId, setReceiverId, threads, loading, error, refetch, openChatWithUser, closeProfileChat, closeThreadChat, isProfileChatOpen, isThreadOpen, sendMessageViaSocket, socket }}>
       {children}
     </ChatContext.Provider>
   );

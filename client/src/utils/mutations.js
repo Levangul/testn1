@@ -51,25 +51,26 @@ export const ADD_POST = gql`
   }
 `;
 
-export const SEND_MESSAGE = gql`
-  mutation sendMessage($receiverId: ID!, $message: String!) {
-    sendMessage(receiverId: $receiverId, message: $message) {
-      id
-      sender {
-        id
-        name
-        lastname
-      }
-      receiver {
-        id
-        name
-        lastname
-      }
-      message
-      timestamp
-    }
-  }
-`;
+// export const SEND_MESSAGE = gql`
+//   mutation sendMessage($receiverId: ID!, $message: String!) {
+//     sendMessage(receiverId: $receiverId, message: $message) {
+//       id
+//       sender {
+//         id
+//         name
+//         lastname
+//       }
+//       receiver {
+//         id
+//         name
+//         lastname
+//       }
+//       message
+//       timestamp
+//       read
+//     }
+//   }
+// `;
 
 export const MARK_MESSAGES_AS_READ = gql`
   mutation markMessagesAsRead($receiverId: ID!) {
@@ -154,5 +155,39 @@ export const REMOVE_FRIEND = gql`
       lastname
       profilePicture
     }
+  }
+`;
+
+export const SEND_FRIEND_REQUEST = gql`
+  mutation sendFriendRequest($friendId: ID!) {
+    sendFriendRequest(friendId: $friendId) {
+      id
+      name
+      lastname
+      profilePicture
+    }
+  }
+`;
+
+export const ACCEPT_FRIEND_REQUEST = gql`
+  mutation acceptFriendRequest($friendId: ID!) {
+    acceptFriendRequest(friendId: $friendId) {
+      id
+      name
+      lastname
+      profilePicture
+      friends {
+        id
+        name
+        lastname
+        profilePicture
+      }
+    }
+  }
+`;
+
+export const REJECT_FRIEND_REQUEST = gql`
+  mutation rejectFriendRequest($friendId: ID!) {
+    rejectFriendRequest(friendId: $friendId)
   }
 `;

@@ -17,6 +17,12 @@ export const GET_USER = gql`
         lastname
         profilePicture
       }
+      friendRequests {
+        id
+        name
+        lastname
+        profilePicture
+      }
       posts {
         id
         text
@@ -40,6 +46,7 @@ export const GET_USER = gql`
     }
   }
 `;
+
 
 export const SEARCH_USER = gql`
   query searchUser($name: String!, $lastname: String!) {
@@ -67,11 +74,27 @@ export const GET_MESSAGES = gql`
         lastname
       }
       message
-      timestamp
+      date
       read
     }
   }
 `;
+
+export const GET_FRIEND_REQUESTS = gql`
+  query getFriendRequests {
+    user {
+      id
+      name
+      lastname
+      friendRequests {
+        id
+        name
+        lastname
+        profilePicture
+      }
+    }
+  }
+`;  
 
 export const GET_POSTS = gql`
   query getPosts {
