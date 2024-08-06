@@ -162,33 +162,49 @@ const resolvers = {
     },
     acceptFriendRequest: async (_, { friendId }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to accept a friend request');
-
+    
+      console.log('User accepting the request:', user._id);
+      console.log('Friend ID to be accepted:', friendId);
+    
       const friend = await User.findById(friendId);
-      if (!friend) throw new Error('User not found');
-
+      if (!friend) {
+        console.error('Friend not found');
+        throw new Error('User not found');
+      }
+    
       if (!user.friendRequests.map(id => id.toString()).includes(friendId.toString())) {
+        console.error('No friend request found');
         throw new Error('No friend request found');
       }
-
+    
+      // Process the friend request
       user.friendRequests = user.friendRequests.filter(id => id.toString() !== friendId.toString());
       user.friends.push(friendId.toString());
       friend.friends.push(user._id.toString());
-
+    
       await user.save();
       await friend.save();
-
+    
+      console.log('Friend request accepted successfully');
       return friend;
     },
+    
     rejectFriendRequest: async (_, { friendId }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to reject a friend request');
-
+    
+      console.log('User rejecting the request:', user._id);
+      console.log('Friend ID to be rejected:', friendId);
+    
       if (!user.friendRequests.map(id => id.toString()).includes(friendId.toString())) {
+        console.error('No friend request found');
         throw new Error('No friend request found');
       }
-
+    
+      // Remove the friend request
       user.friendRequests = user.friendRequests.filter(id => id.toString() !== friendId.toString());
       await user.save();
-
+    
+      console.log('Friend request rejected successfully');
       return true;
     },
     removeFriend: async (_, { friendId }, { user }) => {

@@ -140,7 +140,7 @@ const Profile = () => {
 
   const handleAcceptRequest = async (friendId) => {
     try {
-      await acceptFriendRequest({ variables: { friendId } });
+      await acceptFriendRequest({ variables: { friendId: friendId.toString() } });
     } catch (error) {
       console.error('Error accepting friend request:', error);
     }
