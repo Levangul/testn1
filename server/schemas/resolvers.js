@@ -212,6 +212,25 @@ const resolvers = {
     console.log('Friend request rejected successfully. Updated friendRequests:', currentUser.friendRequests);
     return true;
   },
+  removeFriend: async (_, { friendId }, { user }) => {
+    if (!user) throw new AuthenticationError('You must be logged in to remove friends');
+  
+    const currentUser = await User.findById(user._id);
+    const friend = await User.findById(friendId);
+  
+    if (!friend) throw new Error('Friend not found');
+  
+    // Remove the friend from the current user's friends list
+    currentUser.friends = currentUser.friends.filter(id => id.toString() !== friendId.toString());
+  
+    // Remove the current user from the friend's friends list
+    friend.friends = friend.friends.filter(id => id.toString() !== user._id.toString());
+  
+    await currentUser.save();
+    await friend.save();
+  
+    return friend;
+  },
     
   },
   User: {
