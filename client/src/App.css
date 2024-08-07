@@ -167,7 +167,7 @@ button:hover {
 .search-input {
   padding: 10px;
   width: 200px;
-  margin-right: 10px;
+  margin-right: 0 !important;
 }
 
 .search-button {
