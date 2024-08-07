@@ -113,17 +113,18 @@ const Profile = () => {
 
   const handleAddFriend = async () => {
     if (data && data.user && data.user.id !== user.id) {
-      try {
-        console.log("Sending Friend Request with ID:", data.user.id.toString());
-        await sendFriendRequest({ variables: { friendId: data.user.id.toString() } }); // Convert to string
-        console.log('Friend request sent successfully');
-      } catch (error) {
-        console.error('Error sending friend request:', error);
-      }
+        try {
+            console.log("Sending Friend Request with ID:", data.user.id.toString());
+            await sendFriendRequest({ variables: { friendId: data.user.id.toString() } });
+            console.log('Friend request sent successfully');
+        } catch (error) {
+            console.error('Error sending friend request:', error);
+        }
     } else {
-      console.error('Cannot send friend request to self or invalid user data');
+        console.error('Cannot send friend request to self or invalid user data');
     }
-  };
+};
+
 
   const handleRemoveFriend = async () => {
     if (data && data.user && data.user.id !== user.id) {
@@ -138,21 +139,26 @@ const Profile = () => {
     }
   };
 
-  const handleAcceptRequest = async (friendId) => {
-    try {
-      await acceptFriendRequest({ variables: { friendId: friendId.toString() } });
-    } catch (error) {
-      console.error('Error accepting friend request:', error);
-    }
-  };
+  
 
-  const handleRejectRequest = async (friendId) => {
+  const handleAcceptRequest = async (friendId) => {
+    console.log("Accepting Friend Request for ID:", friendId);
     try {
-      await rejectFriendRequest({ variables: { friendId } });
+        await acceptFriendRequest({ variables: { friendId: friendId.toString() } });
     } catch (error) {
-      console.error('Error rejecting friend request:', error);
+        console.error('Error accepting friend request:', error);
     }
-  };
+};
+
+const handleRejectRequest = async (friendId) => {
+    console.log("Rejecting Friend Request for ID:", friendId);
+    try {
+        await rejectFriendRequest({ variables: { friendId: friendId.toString() } });
+    } catch (error) {
+        console.error('Error rejecting friend request:', error);
+    }
+};
+
 
   const handleViewFriends = () => {
     navigate('/friends');

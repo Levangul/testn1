@@ -67,7 +67,6 @@ const typeDefs = gql`
     updateUserInfo(city: String, birthday: String, aboutMe: String, profilePicture: String): User
     sendMessage(receiverId: ID!, message: String!): Message
     markMessagesAsRead(receiverId: ID!): Boolean
-    addFriend(friendId: ID!): User
     removeFriend(friendId: ID!): User
     sendFriendRequest(friendId: ID!): User
     acceptFriendRequest(friendId: ID!): User

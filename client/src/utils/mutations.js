@@ -136,16 +136,7 @@ export const UPDATE_USER_INFO = gql`
   }
 `;
 
-export const ADD_FRIEND = gql`
-  mutation addFriend($friendId: ID!) {
-    addFriend(friendId: $friendId) {
-      id
-      name
-      lastname
-      profilePicture
-    }
-  }
-`;
+
 
 export const REMOVE_FRIEND = gql`
   mutation removeFriend($friendId: ID!) {
