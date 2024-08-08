@@ -7,7 +7,7 @@ const ChatThread = ({ thread, onBack }) => {
   const { user } = useAuth();
   const { openChatWithUser, sendMessageViaSocket, closeProfileChat, closeThreadChat } = useChat(); 
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState(thread ? thread.messages : []); // Initialize with an empty array
+  const [messages, setMessages] = useState(thread ? thread.messages : []);
   const messageListRef = useRef(null);
 
   useEffect(() => {
@@ -31,6 +31,7 @@ const ChatThread = ({ thread, onBack }) => {
     if (message.trim() && thread?.user?.id !== user.id) {
       sendMessageViaSocket(thread.user.id, message.trim());
       setMessage('');
+      scrollToBottom(); // Scroll after sending the message
     }
   };
 
@@ -55,7 +56,7 @@ const ChatThread = ({ thread, onBack }) => {
         <button onClick={() => { closeThreadChat(); onBack(); }}>Back to Inbox</button>
         <h3>Chat with {thread.user.name} {thread.user.lastname}</h3>
         <div className="message-list" ref={messageListRef}>
-          {messages && messages.length > 0 ? (
+          {messages.length > 0 ? (
             messages.map((msg) => (
               <div key={msg.id} className="message">
                 <p>

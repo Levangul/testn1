@@ -3,7 +3,7 @@ import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import { GET_USER } from '../utils/queries';
 import { useAuth } from '../context/AuthContext';
-import '../css/friendsList.css'; // Import the CSS file
+import '../css/friendsList.css';
 
 const FriendsList = () => {
   const { user } = useAuth();
