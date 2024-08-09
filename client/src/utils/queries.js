@@ -103,15 +103,18 @@ export const GET_POSTS = gql`
       text
       date
       author {
+        profilePicture
         id
         name
         lastname
       }
       comments {
+        
         id
         text
         date
         author {
+          profilePicture
           id
           name
           lastname

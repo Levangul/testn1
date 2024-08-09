@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT } from '../utils/mutations';
-import { GET_POSTS, GET_USER } from '../utils/queries';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import '../css/post.css';
@@ -43,6 +42,7 @@ const Post = ({ post }) => {
           id: user ? user.id : null,
           name: user ? user.name : 'Anonymous',
           lastname: user ? user.lastname : '',
+          profilePicture: user ? user.profilePicture : 'https://via.placeholder.com/40', // Add default profile picture URL
           __typename: 'User',
         },
         post: {
@@ -68,22 +68,6 @@ const Post = ({ post }) => {
         cache.writeQuery({
           query: GET_POSTS,
           data: { posts: updatedPosts },
-        });
-      }
-
-      const existingUser = cache.readQuery({ query: GET_USER, variables: { name: user.name, lastname: user.lastname } });
-
-      if (existingUser && existingUser.user && existingUser.user.posts) {
-        const updatedUserPosts = existingUser.user.posts.filter((p) => p.id !== removePost.id);
-        cache.writeQuery({
-          query: GET_USER,
-          variables: { name: user.name, lastname: user.lastname },
-          data: {
-            user: {
-              ...existingUser.user,
-              posts: updatedUserPosts,
-            },
-          },
         });
       }
     },
@@ -178,7 +162,16 @@ const Post = ({ post }) => {
     <div className="post-container">
       <div className="post-content">
         <div className="post-author">
-          <Link to={`/user/${post.author.name}/${post.author.lastname}`}>{post.author.name} {post.author.lastname}</Link>
+          <div className="post-author-details">
+            <img 
+              src={post.author.profilePicture || 'https://via.placeholder.com/40'} 
+              alt={`${post.author.name} ${post.author.lastname}`} 
+              className="profile-picture" 
+            />
+            <Link to={`/user/${post.author.name}/${post.author.lastname}`}>
+              {post.author.name} {post.author.lastname}
+            </Link>
+          </div>
           {user && user.id === post.author.id && (
             <button className="delete-button" onClick={handlePostDelete}>🗑️</button>
           )}
@@ -188,9 +181,19 @@ const Post = ({ post }) => {
           <h4>Comments</h4>
           {post.comments.map((comment) => (
             <div key={comment.id} className="comment">
-              <span className="comment-username">
-                <Link to={`/user/${comment.author.name}/${comment.author.lastname}`}>{comment.author.name} {comment.author.lastname}</Link>
-              </span>: <span className="comment-text">{comment.text}</span>
+              <div className="comment-author-details">
+                <img 
+                  src={comment.author.profilePicture || 'https://via.placeholder.com/40'} 
+                  alt={`${comment.author.name} ${comment.author.lastname}`} 
+                  className="profile-picture" 
+                />
+                <span className="comment-username">
+                  <Link to={`/user/${comment.author.name}/${comment.author.lastname}`}>
+                    {comment.author.name} {comment.author.lastname}
+                  </Link>
+                </span>
+              </div>
+              <span className="comment-text">{comment.text}</span>
               {user && user.id === comment.author.id && (
                 <button className="delete-button" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
               )}
