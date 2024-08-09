@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client';
 import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { GET_POSTS } from '../utils/queries';
 import '../css/post.css';
 
 const Post = ({ post }) => {
