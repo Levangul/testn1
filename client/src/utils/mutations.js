@@ -100,6 +100,7 @@ export const REMOVE_POST = gql`
   mutation removePost($postId: ID!) {
     removePost(postId: $postId) {
       id
+      __typename
     }
   }
 `;

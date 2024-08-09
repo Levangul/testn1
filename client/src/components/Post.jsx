@@ -3,117 +3,32 @@ import { useMutation } from '@apollo/client';
 import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { GET_POSTS } from '../utils/queries';
+import { GET_POSTS, GET_USER } from '../utils/queries';
 import '../css/post.css';
 
-const Post = ({ post }) => {
+const Post = ({ post, refetchQueries }) => {
   const [commentText, setCommentText] = useState('');
   const { user } = useAuth();
 
   const [addComment] = useMutation(ADD_COMMENT, {
-    update(cache, { data: { addComment } }) {
-      const postId = post.id;
-      const existingPosts = cache.readQuery({ query: GET_POSTS });
-
-      if (existingPosts && existingPosts.posts) {
-        const updatedPosts = existingPosts.posts.map((p) => {
-          if (p.id === postId) {
-            return {
-              ...p,
-              comments: [...p.comments, addComment],
-            };
-          }
-          return p;
-        });
-        cache.writeQuery({
-          query: GET_POSTS,
-          data: { posts: updatedPosts },
-        });
-      }
-    },
+    refetchQueries: refetchQueries || [{ query: GET_POSTS }], // Refetch GET_POSTS or custom queries after adding a comment
     onError(error) {
       console.error('Error adding comment:', error);
-    },
-    optimisticResponse: {
-      addComment: {
-        id: Math.random().toString(36).substr(2, 9),
-        text: commentText,
-        date: new Date().toISOString(),
-        author: {
-          id: user ? user.id : null,
-          name: user ? user.name : 'Anonymous',
-          lastname: user ? user.lastname : '',
-          profilePicture: user ? user.profilePicture : 'https://via.placeholder.com/40', // Add default profile picture URL
-          __typename: 'User',
-        },
-        post: {
-          id: post.id,
-          __typename: 'Post',
-        },
-        __typename: 'Comment',
-      },
     },
   });
 
   const [removePost] = useMutation(REMOVE_POST, {
-    update(cache, { data: { removePost } }) {
-      if (!removePost || !removePost.id) {
-        console.error('removePost mutation did not return id.');
-        return;
-      }
-
-      const existingPosts = cache.readQuery({ query: GET_POSTS });
-
-      if (existingPosts && existingPosts.posts) {
-        const updatedPosts = existingPosts.posts.filter((p) => p.id !== removePost.id);
-        cache.writeQuery({
-          query: GET_POSTS,
-          data: { posts: updatedPosts },
-        });
-      }
-    },
+    refetchQueries: refetchQueries || [{ query: GET_POSTS }], // Refetch GET_POSTS or custom queries after removing a post
     onError(error) {
-      console.error('Error removing post:', error);
-    },
-    optimisticResponse: {
-      removePost: {
-        id: post.id,
-        __typename: 'Post',
-      },
+      console.error('Error removing post:', error.message);
+      console.error('Full error details:', JSON.stringify(error, null, 2));
     },
   });
 
   const [removeComment] = useMutation(REMOVE_COMMENT, {
-    update(cache, { data: { removeComment } }) {
-      if (!post || !post.id) return;
-
-      const postId = post.id;
-      const existingPosts = cache.readQuery({ query: GET_POSTS });
-
-      if (existingPosts && existingPosts.posts) {
-        const updatedPosts = existingPosts.posts.map((p) => {
-          if (p.id === postId) {
-            return {
-              ...p,
-              comments: p.comments.filter((comment) => comment.id !== removeComment.id),
-            };
-          }
-          return p;
-        });
-        cache.writeQuery({
-          query: GET_POSTS,
-          data: { posts: updatedPosts },
-        });
-      }
-    },
+    refetchQueries: refetchQueries || [{ query: GET_POSTS }], // Refetch GET_POSTS or custom queries after removing a comment
     onError(error) {
       console.error('Error removing comment:', error);
-    },
-    optimisticResponse: {
-      removeComment: {
-        id: Math.random().toString(36).substr(2, 9),
-        __typename: 'Comment',
-      },
     },
   });
 
@@ -125,7 +40,7 @@ const Post = ({ post }) => {
     }
     try {
       await addComment({ variables: { postId: post.id, text: commentText } });
-      setCommentText('');
+      setCommentText(''); // Clear the input after submitting
     } catch (err) {
       console.error('Error adding comment:', err);
     }
@@ -139,7 +54,8 @@ const Post = ({ post }) => {
     try {
       await removePost({ variables: { postId: post.id } });
     } catch (err) {
-      console.error('Error removing post:', err);
+      console.error('Error removing post:', err.message);
+      console.error('Full error details:', JSON.stringify(err, null, 2));
     }
   };
 
@@ -220,3 +136,4 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+

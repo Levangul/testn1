@@ -1,5 +1,5 @@
 const { User, Post, Comment, Message } = require('../models');
-const { AuthenticationError } = require('apollo-server-express');
+const { AuthenticationError, UserInputError } = require('apollo-server-express');
 const { signToken } = require('../utils/auth');
 
 const resolvers = {
@@ -98,17 +98,26 @@ const resolvers = {
       return newComment;
     },
     removePost: async (parent, { postId }, context) => {
-      if (context.user) {
-        const post = await Post.findById(postId);
-        if (post && post.author.toString() === context.user._id.toString()) {
-          await Comment.deleteMany({ post: postId });
-          await Post.findByIdAndDelete(postId);
-          return post;
-        }
+      if (!context.user) {
+        throw new AuthenticationError('You need to be logged in!');
+      }
+    
+      const post = await Post.findById(postId);
+      
+      if (!post) {
+        throw new UserInputError('Post not found.');
+      }
+    
+      if (post.author.toString() !== context.user._id.toString()) {
         throw new AuthenticationError('You do not have permission to delete this post.');
       }
-      throw new AuthenticationError('You need to be logged in!');
+    
+      await Comment.deleteMany({ post: postId });
+      await Post.findByIdAndDelete(postId);
+    
+      return post;
     },
+    
     updateUserInfo: async (_, { city, birthday, aboutMe, profilePicture }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to update your profile');
 
