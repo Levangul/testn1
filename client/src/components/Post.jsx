@@ -20,7 +20,7 @@ const Post = ({ post }) => {
           if (p.id === postId) {
             return {
               ...p,
-              comments: [...p.comments, addComment], // Append the new comment at the bottom
+              comments: [...p.comments, addComment],
             };
           }
           return p;
@@ -177,12 +177,12 @@ const Post = ({ post }) => {
   return (
     <div className="post-container">
       <div className="post-content">
-        <h3 className="post-author">
+        <div className="post-author">
           <Link to={`/user/${post.author.name}/${post.author.lastname}`}>{post.author.name} {post.author.lastname}</Link>
           {user && user.id === post.author.id && (
             <button className="delete-button" onClick={handlePostDelete}>🗑️</button>
           )}
-        </h3>
+        </div>
         <p className="post-text">{post.text}</p>
         <div className="comments-section">
           <h4>Comments</h4>
