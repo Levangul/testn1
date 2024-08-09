@@ -123,8 +123,7 @@ const Profile = () => {
     } else {
         console.error('Cannot send friend request to self or invalid user data');
     }
-};
-
+  };
 
   const handleRemoveFriend = async () => {
     if (data && data.user && data.user.id !== user.id) {
@@ -139,8 +138,6 @@ const Profile = () => {
     }
   };
 
-  
-
   const handleAcceptRequest = async (friendId) => {
     console.log("Accepting Friend Request for ID:", friendId);
     try {
@@ -148,17 +145,16 @@ const Profile = () => {
     } catch (error) {
         console.error('Error accepting friend request:', error);
     }
-};
+  };
 
-const handleRejectRequest = async (friendId) => {
+  const handleRejectRequest = async (friendId) => {
     console.log("Rejecting Friend Request for ID:", friendId);
     try {
         await rejectFriendRequest({ variables: { friendId: friendId.toString() } });
     } catch (error) {
         console.error('Error rejecting friend request:', error);
     }
-};
-
+  };
 
   const handleViewFriends = () => {
     navigate('/friends');
@@ -248,7 +244,13 @@ const handleRejectRequest = async (friendId) => {
         <div className="profile-section mb-4">
           <h2 className="text-xl font-bold mt-8 mb-4">Your Posts</h2>
           {user && user.name === data.user.name && user.lastname === data.user.lastname && <CreatePost />}
-          {data.user.posts.map((post) => <Post key={post.id} post={post} />)}
+          {data.user.posts.map((post) => (
+            <Post 
+              key={post.id} 
+              post={post} 
+              refetchQueries={[{ query: GET_USER, variables: { name: data.user.name, lastname: data.user.lastname } }]}
+            />
+          ))}
         </div>
         <div className="profile-section mb-4">
           <h2 className="text-xl font-bold mt-8 mb-4">Friends</h2>
