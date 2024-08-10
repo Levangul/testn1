@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -18,7 +19,7 @@
 a {
   font-weight: 500;
   color: #646cff;
-  text-decoration: none;
+  text-decoration: inherit;
 }
 
 a:hover {
@@ -33,15 +34,6 @@ body {
   flex-direction: column;
 }
 
-header {
-  width: 100%;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -49,157 +41,52 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  /* background-color: #1a1a1a; */
-  color: white; /* Ensure the text color is white */
+  color: white;
   cursor: pointer;
   transition: border-color 0.25s, background-color 0.25s;
 }
 
 button:hover {
   border-color: #646cff;
-  background-color: #333; /* Darken the button on hover */
-}
-
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  background-color: #333;
 }
 
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #333;
-  padding: 1rem;
+  @apply flex justify-between items-center bg-gray-800 p-4;
 }
 
-.navbar-brand a {
-  color: #fff;
-  text-decoration: none;
-  font-size: 1.5rem;
-}
-
-.navbar-links {
-  list-style: none;
-  display: flex;
-  gap: 1rem;
-}
-
-.navbar-links li {
-  display: inline;
-}
-
-.navbar-links a {
-  color: #fff;
-  text-decoration: none;
-  font-size: 1rem;
-}
-
-.navbar-links a:hover {
-  text-decoration: underline;
+.navbar a {
+  @apply text-white text-lg no-underline;
 }
 
 #root {
-  max-width: auto;
-  text-align: center; 
+  @apply max-w-full text-center;
 }
 
-.navbar-links a:hover,
-.navbar-links button:hover {
-  background-color: #f0f0f0;
-  color: #0056b3;
-}
-
-form {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #fff; /* Set background color to white */
-}
-
-input,
-textarea {
-  width: 100%;
-  padding: 0.5rem;
-  box-sizing: border-box;
-  background-color: #fff; /* Set background color to white */
-  color: #000; /* Ensure text color is black */
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.delete-button:hover {
-  background-color: transparent;
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
+/* Additional styles for specific components */
 .search-container {
-  padding: 20px;
-  text-align: center;
-}
-
-.search-input {
-  padding: 10px;
-  width: 200px;
-  margin-right: 10px;
-}
-
-.search-button {
-  padding: 10px 20px;
+  @apply p-4 text-center;
 }
 
 .search-results {
-  margin-top: 20px;
-  text-align: left;
-}
-
-.search-results div {
-  padding: 10px;
-  cursor: pointer;
-}
-
-.search-results div:hover {
-  background-color: #f0f0f0;
-}
-
-.inbox-container {
-  padding: 20px;
-}
-
-.user-item {
-  cursor: pointer;
-  padding: 10px;
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
+  @apply mt-4 text-left;
 }
 
 .user-item:hover {
-  background-color: #f0f0f0;
+  @apply bg-gray-200;
 }
 
-.new-message-indicator {
-  color: red;
-  margin-left: 8px;
-  font-size: 14px;
-}
-
+/* Media Queries */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }

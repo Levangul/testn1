@@ -43,9 +43,9 @@ const ChatComponent = () => {
       </div>
       <div className="chat-messages" ref={messageListRef}>
         {messages.map((msg) => (
-          <div key={msg.id}>
-            <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-          </div>
+          <div key={msg.id} className={`message ${msg.sender.id === user.id ? 'sender' : 'receiver'}`}>
+          <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
+        </div>
         ))}
       </div>
       <div className="chat-input">
