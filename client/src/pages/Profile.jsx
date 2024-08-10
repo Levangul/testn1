@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { useParams, useNavigate } from 'react-router-dom';
-import { GET_USER } from '../utils/queries';
+import { GET_USER, GET_POSTS } from '../utils/queries';
 import { UPDATE_USER_INFO, SEND_FRIEND_REQUEST, REMOVE_FRIEND, ACCEPT_FRIEND_REQUEST, REJECT_FRIEND_REQUEST } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
@@ -15,10 +15,12 @@ const Profile = () => {
   const { user } = useAuth();
   const { openChatWithUser } = useChat();
 
-  const { loading, error, data, refetch } = useQuery(GET_USER, {
+  const { loading: userLoading, error: userError, data: userData, refetch: refetchUser } = useQuery(GET_USER, {
     variables: { name: name || user?.name, lastname: lastname || user?.lastname },
     skip: (!name && !lastname) && !user,
   });
+
+  const { loading: postsLoading, error: postsError, data: postsData, refetch: refetchPosts } = useQuery(GET_POSTS);
 
   const [editable, setEditable] = useState(false);
   const [city, setCity] = useState('');
@@ -29,22 +31,22 @@ const Profile = () => {
   const [isFriend, setIsFriend] = useState(false);
   const [requestPending, setRequestPending] = useState(false);
 
-  const [updateUserInfo] = useMutation(UPDATE_USER_INFO, { onCompleted: () => refetch() });
-  const [sendFriendRequest] = useMutation(SEND_FRIEND_REQUEST, { onCompleted: () => { refetch(); setRequestPending(true); } });
-  const [removeFriend] = useMutation(REMOVE_FRIEND, { onCompleted: () => { refetch(); setIsFriend(false); } });
-  const [acceptFriendRequest] = useMutation(ACCEPT_FRIEND_REQUEST, { onCompleted: refetch });
-  const [rejectFriendRequest] = useMutation(REJECT_FRIEND_REQUEST, { onCompleted: refetch });
+  const [updateUserInfo] = useMutation(UPDATE_USER_INFO, { onCompleted: () => refetchUser() });
+  const [sendFriendRequest] = useMutation(SEND_FRIEND_REQUEST, { onCompleted: () => { refetchUser(); setRequestPending(true); } });
+  const [removeFriend] = useMutation(REMOVE_FRIEND, { onCompleted: () => { refetchUser(); setIsFriend(false); } });
+  const [acceptFriendRequest] = useMutation(ACCEPT_FRIEND_REQUEST, { onCompleted: refetchUser });
+  const [rejectFriendRequest] = useMutation(REJECT_FRIEND_REQUEST, { onCompleted: refetchUser });
 
   useEffect(() => {
-    if (data && data.user) {
-      setCity(data.user.city || '');
-      setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
-      setAboutMe(data.user.aboutMe || '');
-      setProfileImageUrl(data.user.profilePicture || '');
-      setIsFriend(user && data.user.friends.some(friend => friend.id === user.id));
-      setRequestPending(user && data.user.friendRequests.some(request => request.id === user.id));
+    if (userData && userData.user) {
+      setCity(userData.user.city || '');
+      setBirthday(userData.user.birthday ? new Date(parseInt(userData.user.birthday)).toISOString().split('T')[0] : '');
+      setAboutMe(userData.user.aboutMe || '');
+      setProfileImageUrl(userData.user.profilePicture || '');
+      setIsFriend(user && userData.user.friends.some(friend => friend.id === user.id));
+      setRequestPending(user && userData.user.friendRequests.some(request => request.id === user.id));
     }
-  }, [data, user]);
+  }, [userData, user]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -64,11 +66,11 @@ const Profile = () => {
 
   const handleCancel = () => {
     setEditable(false);
-    if (data && data.user) {
-      setCity(data.user.city || '');
-      setBirthday(data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : '');
-      setAboutMe(data.user.aboutMe || '');
-      setProfileImageUrl(data.user.profilePicture || '');
+    if (userData && userData.user) {
+      setCity(userData.user.city || '');
+      setBirthday(userData.user.birthday ? new Date(parseInt(userData.user.birthday)).toISOString().split('T')[0] : '');
+      setAboutMe(userData.user.aboutMe || '');
+      setProfileImageUrl(userData.user.profilePicture || '');
     }
   };
 
@@ -104,18 +106,18 @@ const Profile = () => {
   };
 
   const handleSendMessage = () => {
-    if (data && data.user && data.user.id !== user.id) {
-      openChatWithUser(data.user.id, true); // Pass true to indicate it's from profile
+    if (userData && userData.user && userData.user.id !== user.id) {
+      openChatWithUser(userData.user.id, true); // Pass true to indicate it's from profile
     } else {
       console.error('Cannot send message to self or invalid user data');
     }
   };
 
   const handleAddFriend = async () => {
-    if (data && data.user && data.user.id !== user.id) {
+    if (userData && userData.user && userData.user.id !== user.id) {
         try {
-            console.log("Sending Friend Request with ID:", data.user.id.toString());
-            await sendFriendRequest({ variables: { friendId: data.user.id.toString() } });
+            console.log("Sending Friend Request with ID:", userData.user.id.toString());
+            await sendFriendRequest({ variables: { friendId: userData.user.id.toString() } });
             console.log('Friend request sent successfully');
         } catch (error) {
             console.error('Error sending friend request:', error);
@@ -126,9 +128,9 @@ const Profile = () => {
   };
 
   const handleRemoveFriend = async () => {
-    if (data && data.user && data.user.id !== user.id) {
+    if (userData && userData.user && userData.user.id !== user.id) {
       try {
-        await removeFriend({ variables: { friendId: data.user.id } });
+        await removeFriend({ variables: { friendId: userData.user.id } });
         console.log('Friend removed successfully');
       } catch (error) {
         console.error('Error removing friend:', error);
@@ -164,14 +166,14 @@ const Profile = () => {
     return <p className="text-red-500">You need to log in to view profiles.</p>;
   }
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  if (userLoading || postsLoading) return <p>Loading...</p>;
+  if (userError || postsError) return <p>Error: {userError?.message || postsError?.message}</p>;
 
-  if (!data || !data.user) {
+  if (!userData || !userData.user) {
     return <p>Profile not found</p>;
   }
 
-  const isOwnProfile = user && user.id === data.user.id;
+  const isOwnProfile = user && user.id === userData.user.id;
 
   return (
     <div className="profile-container p-4 flex">
@@ -186,14 +188,14 @@ const Profile = () => {
           )}
         </div>
         <div className="profile-section mb-4">
-          <h1 className="text-2xl font-bold mb-4">{data.user.name} {data.user.lastname}</h1>
+          <h1 className="text-2xl font-bold mb-4">{userData.user.name} {userData.user.lastname}</h1>
           <div className="profile-info">
             <div className="info-item">
               <span className="label">City:</span>
               {editable ? (
                 <input type="text" value={city} onChange={(e) => setCity(e.target.value)} className="value-edit" />
               ) : (
-                <span className="value">{data.user.city || 'N/A'}</span>
+                <span className="value">{userData.user.city || 'N/A'}</span>
               )}
             </div>
             <div className="info-item">
@@ -201,7 +203,7 @@ const Profile = () => {
               {editable ? (
                 <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} className="value-edit" />
               ) : (
-                <span className="value">{data.user.birthday ? new Date(parseInt(data.user.birthday)).toISOString().split('T')[0] : 'N/A'}</span>
+                <span className="value">{userData.user.birthday ? new Date(parseInt(userData.user.birthday)).toISOString().split('T')[0] : 'N/A'}</span>
               )}
             </div>
             <div className="info-item">
@@ -209,10 +211,10 @@ const Profile = () => {
               {editable ? (
                 <textarea value={aboutMe} onChange={(e) => setAboutMe(e.target.value)} className="value-edit" />
               ) : (
-                <span className="value">{data.user.aboutMe || 'N/A'}</span>
+                <span className="value">{userData.user.aboutMe || 'N/A'}</span>
               )}
             </div>
-            {user && user.name === data.user.name && user.lastname === data.user.lastname && (
+            {user && user.name === userData.user.name && user.lastname === userData.user.lastname && (
               <div className="edit-buttons mt-4">
                 {editable ? (
                   <>
@@ -226,7 +228,7 @@ const Profile = () => {
             )}
           </div>
         </div>
-        {user && (user.name !== data.user.name || user.lastname !== data.user.lastname) && (
+        {user && (user.name !== userData.user.name || user.lastname !== userData.user.lastname) && (
           <div className="action-section mt-4">
             <button onClick={handleSendMessage} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">Send Message</button>
             {isFriend ? (
@@ -243,13 +245,9 @@ const Profile = () => {
 
         <div className="profile-section mb-4">
           <h2 className="text-xl font-bold mt-8 mb-4">Your Posts</h2>
-          {user && user.name === data.user.name && user.lastname === data.user.lastname && <CreatePost />}
-          {data.user.posts.map((post) => (
-            <Post 
-              key={post.id} 
-              post={post} 
-              refetchQueries={[{ query: GET_USER, variables: { name: data.user.name, lastname: data.user.lastname } }]}
-            />
+          {user && user.name === userData.user.name && user.lastname === userData.user.lastname && <CreatePost />}
+          {postsData.posts.filter(post => post.author.id === userData.user.id).map((post) => (
+            <Post key={post.id} post={post} />
           ))}
         </div>
         <div className="profile-section mb-4">
@@ -261,10 +259,10 @@ const Profile = () => {
       {isOwnProfile && (
         <div className="friend-requests-container bg-white shadow-md rounded p-4 w-1/4 ml-4 overflow-y-auto" style={{ maxHeight: '80vh' }}>
           <h2 className="text-xl font-bold mb-4">Friend Requests</h2>
-          {data.user.friendRequests.length === 0 ? (
+          {userData.user.friendRequests.length === 0 ? (
             <p>No friend requests</p>
           ) : (
-            data.user.friendRequests.map((request) => (
+            userData.user.friendRequests.map((request) => (
               <div key={request.id} className="friend-request-item mb-4">
                 <div className="flex items-center">
                   <img src={request.profilePicture || 'https://via.placeholder.com/50'} alt={request.name} className="friend-request-image rounded-full" style={{ width: '50px', height: '50px' }} />
@@ -286,3 +284,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

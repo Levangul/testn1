@@ -58,11 +58,11 @@ const ChatThread = ({ thread, onBack }) => {
         <div className="message-list" ref={messageListRef}>
           {messages.length > 0 ? (
             messages.map((msg) => (
-              <div key={msg.id} className="message">
-                <p>
-                  <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-                </p>
-              </div>
+              <div key={msg.id} className={`message ${msg.sender.id === user.id ? 'sender' : 'receiver'}`}>
+  <p>
+    <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
+  </p>
+</div>
             ))
           ) : (
             <p>No messages yet</p>
