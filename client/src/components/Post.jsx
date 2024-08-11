@@ -96,26 +96,29 @@ const Post = ({ post, refetchQueries }) => {
         <p className="post-text">{post.text}</p>
         <div className="comments-section">
           <h4>Comments</h4>
-          {post.comments.map((comment) => (
-            <div key={comment.id} className="comment">
-              <div className="comment-author-details">
-                <img 
-                  src={comment.author.profilePicture || 'https://via.placeholder.com/40'} 
-                  alt={`${comment.author.name} ${comment.author.lastname}`} 
-                  className="profile-picture" 
-                />
-                <span className="comment-username">
-                  <Link to={`/user/${comment.author.name}/${comment.author.lastname}`}>
-                    {comment.author.name} {comment.author.lastname}
-                  </Link>
-                </span>
+          {post.comments
+            .slice()
+            .reverse() // Reverse the comments array to display the most recent comment at the bottom
+            .map((comment) => (
+              <div key={comment.id} className="comment">
+                <div className="comment-author-details">
+                  <img 
+                    src={comment.author.profilePicture || 'https://via.placeholder.com/40'} 
+                    alt={`${comment.author.name} ${comment.author.lastname}`} 
+                    className="profile-picture" 
+                  />
+                  <span className="comment-username">
+                    <Link to={`/user/${comment.author.name}/${comment.author.lastname}`}>
+                      {comment.author.name} {comment.author.lastname}
+                    </Link>
+                  </span>
+                </div>
+                <span className="comment-text">{comment.text}</span>
+                {user && user.id === comment.author.id && (
+                  <button className="delete-button" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
+                )}
               </div>
-              <span className="comment-text">{comment.text}</span>
-              {user && user.id === comment.author.id && (
-                <button className="delete-button" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
-              )}
-            </div>
-          ))}
+            ))}
         </div>
       </div>
       {user && (
