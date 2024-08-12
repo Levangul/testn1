@@ -37,12 +37,12 @@ const SearchUser = () => {
   const handleUserClick = (name, lastname) => {
     console.log(`Navigating to user profile: ${name} ${lastname}`);
     navigate(`/user/${name}/${lastname}`);
-    setShowResults(false); // Hide results after clicking on a user
+    setShowResults(false);
   };
 
   const handleClickOutside = (event) => {
     if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
-      setShowResults(false); // Hide results when clicking outside
+      setShowResults(false); 
     }
   };
 
@@ -57,10 +57,10 @@ const SearchUser = () => {
     <div className="search-container" ref={searchContainerRef}>
       <input
         type="text"
-        placeholder="Search for a user..."
+        placeholder="Search"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="search-input"
+        className="search-input text-black placeholder-gray-500"
       />
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error.message}</p>}
