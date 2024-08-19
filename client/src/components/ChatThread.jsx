@@ -1,14 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import '../css/chatThread.css';
 
 const ChatThread = ({ thread, onBack }) => {
   const { user } = useAuth();
-  const { openChatWithUser, sendMessageViaSocket, closeProfileChat, closeThreadChat } = useChat(); 
+  const { openChatWithUser, sendMessageViaSocket, closeProfileChat, closeThreadChat, scrollToBottom, messageListRef } = useChat(); 
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(thread ? thread.messages : []);
-  const messageListRef = useRef(null);
 
   useEffect(() => {
     if (thread && thread.user) {
@@ -25,19 +24,13 @@ const ChatThread = ({ thread, onBack }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   const handleSendMessage = () => {
     if (message.trim() && thread?.user?.id !== user.id) {
       sendMessageViaSocket(thread.user.id, message.trim());
       setMessage('');
       scrollToBottom(); // Scroll after sending the message
-    }
-  };
-
-  const scrollToBottom = () => {
-    if (messageListRef.current) {
-      messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
     }
   };
 
@@ -59,10 +52,10 @@ const ChatThread = ({ thread, onBack }) => {
           {messages.length > 0 ? (
             messages.map((msg) => (
               <div key={msg.id} className={`message ${msg.sender.id === user.id ? 'sender' : 'receiver'}`}>
-  <p>
-    <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-  </p>
-</div>
+                <p>
+                  <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
+                </p>
+              </div>
             ))
           ) : (
             <p>No messages yet</p>

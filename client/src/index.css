@@ -83,7 +83,6 @@ textarea {
   @apply max-w-full text-center;
 }
 
-/* Additional styles for specific components */
 .search-container {
   @apply p-4 text-center;
 }
@@ -96,7 +95,7 @@ textarea {
   @apply bg-gray-200;
 }
 
-/* Media Queries */
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

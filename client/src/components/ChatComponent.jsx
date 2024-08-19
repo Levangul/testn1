@@ -1,13 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import '../css/chat.css';
 
 const ChatComponent = () => {
   const { user } = useAuth();
-  const { receiverId, threads, isProfileChatOpen, closeProfileChat, closeThreadChat, sendMessageViaSocket } = useChat();
+  const { receiverId, threads, isProfileChatOpen, closeProfileChat, closeThreadChat, sendMessageViaSocket, scrollToBottom, messageListRef } = useChat();
   const [message, setMessage] = useState('');
-  const messageListRef = useRef(null);
 
   const messages = receiverId ? threads[receiverId]?.messages || [] : [];
   const receiverName = receiverId ? `${threads[receiverId].user.name} ${threads[receiverId].user.lastname}` : 'Unknown User';
@@ -24,13 +23,7 @@ const ChatComponent = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    if (messageListRef.current) {
-      messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
-    }
-  };
+  }, [messages, scrollToBottom]);
 
   if (!isProfileChatOpen) {
     return null;
@@ -45,8 +38,8 @@ const ChatComponent = () => {
       <div className="chat-messages" ref={messageListRef}>
         {messages.map((msg) => (
           <div key={msg.id} className={`message ${msg.sender.id === user.id ? 'sender' : 'receiver'}`}>
-          <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
-        </div>
+            <strong>{msg.sender.id === user.id ? 'You' : `${msg.sender.name} ${msg.sender.lastname}`}</strong>: {msg.message}
+          </div>
         ))}
       </div>
       <div className="chat-input">
