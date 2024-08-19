@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
+import Spinner from '../components/Spinner'
 import '../css/profile.css';
 
 const Profile = () => {
@@ -21,6 +22,7 @@ const Profile = () => {
   });
 
   const { loading: postsLoading, error: postsError, data: postsData, refetch: refetchPosts } = useQuery(GET_POSTS);
+  
 
   const [editable, setEditable] = useState(false);
   const [city, setCity] = useState('');
@@ -166,7 +168,7 @@ const Profile = () => {
     return <p className="text-red-500">You need to log in to view profiles.</p>;
   }
 
-  if (userLoading || postsLoading) return <p>Loading...</p>;
+  if (userLoading || postsLoading) return <Spinner />;
   if (userError || postsError) return <p>Error: {userError?.message || postsError?.message}</p>;
 
   if (!userData || !userData.user) {

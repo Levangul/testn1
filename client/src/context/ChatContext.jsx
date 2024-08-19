@@ -30,7 +30,7 @@ export const ChatProvider = ({ children }) => {
     if (messageListRef.current) {
       setTimeout(() => {
         messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
-      }, 400); // Adjust delay as necessary
+      }, 300); // Adjust delay as necessary
     }
   }, []);
 
@@ -130,8 +130,8 @@ export const ChatProvider = ({ children }) => {
       isProfileChatOpen,
       isThreadOpen,
       sendMessageViaSocket,
-      scrollToBottom,  // Make scrollToBottom available to the components
-      messageListRef,  // Make the ref available to the components
+      scrollToBottom,  
+      messageListRef, 
       socket
     }}>
       {children}

@@ -3,7 +3,9 @@ import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import { GET_USER } from '../utils/queries';
 import { useAuth } from '../context/AuthContext';
+import Spinner from '../components/Spinner'
 import '../css/friendsList.css';
+import '../css/spiner.css'
 
 const FriendsList = () => {
   const { user } = useAuth();
@@ -24,7 +26,7 @@ const FriendsList = () => {
     return <p>You need to log in to view your friends.</p>;
   }
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Spinner />
   if (error) return <p>Error: {error.message}</p>;
   if (!data || !data.user) {
     return <p>No user data found.</p>;
