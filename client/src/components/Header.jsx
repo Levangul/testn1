@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDoorOpen, faInbox, faUsers, faHome, faUser, faComments, faRightFromBracket, faLockOpen, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import SearchUser from './SearchUser'; // Import the SearchUser component
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -17,42 +18,44 @@ const Header = () => {
 
   return (
     <header className="bg-gray-800 text-white shadow-md">
-      <nav className="container mx-auto p-4 flex justify-between items-center">
-
+      <nav className="container mx-auto p-4 flex items-center justify-between">
         {/* Left side items */}
-        <div className="flex items-center space-x-4 flex-1">
+        <div className="flex items-center space-x-4">
           <div className="navbar-brand">
             <Link to="/" className="text-2xl font-bold hover:text-gray-300">Connect</Link>
           </div>
         </div>
 
-        {/* Center items */}
-        {isAuthenticated && user ? (
-          <ul className="flex space-x-4 items-center">
-            <li>
+        {/* Center items (Home and Profile links) */}
+        <div className="hidden lg:flex lg:space-x-8 absolute left-1/2 transform -translate-x-1/2">
+          {isAuthenticated && user ? (
+            <ul className="flex space-x-4 items-center">
+              <li>
+                <Link to="/" className="flex flex-col items-center hover:text-gray-300">
+                  <span className="text-2xl"><FontAwesomeIcon icon={faHome} /></span>
+                  <span className="text-xs">Home</span>
+                </Link>
+              </li>
+              <li>
+                <Link to={`/user/${user.name}/${user.lastname}`} className="flex flex-col items-center hover:text-gray-300">
+                  <span className="text-2xl"><FontAwesomeIcon icon={faUser} /></span>
+                  <span className="text-xs">Profile</span>
+                </Link>
+              </li>
+            </ul>
+          ) : (
+            <div className="flex justify-center">
               <Link to="/" className="flex flex-col items-center hover:text-gray-300">
                 <span className="text-2xl"><FontAwesomeIcon icon={faHome} /></span>
                 <span className="text-xs">Home</span>
               </Link>
-            </li>
-            <li>
-              <Link to={`/user/${user.name}/${user.lastname}`} className="flex flex-col items-center hover:text-gray-300">
-                <span className="text-2xl"><FontAwesomeIcon icon={faUser} /></span>
-                <span className="text-xs">Profile</span>
-              </Link>
-            </li>
-          </ul>
-        ) : (
-          <div className="flex-1 flex justify-center">
-            <Link to="/" className="flex flex-col items-center hover:text-gray-300">
-              <span className="text-2xl"><FontAwesomeIcon icon={faHome} /></span>
-              <span className="text-xs">Home</span>
-            </Link>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         {/* Right side items */}
-        <div className="flex items-center space-x-4 flex-1 justify-end">
+        <div className="flex items-center space-x-4 ml-auto">
+          <SearchUser /> {/* Add the SearchUser component here */}
           {isAuthenticated ? (
             <ul className="flex space-x-4 items-center">
               <li className="relative">

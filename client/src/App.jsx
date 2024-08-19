@@ -34,7 +34,6 @@ function App() {
       <AuthProvider>
         <ChatProvider>
           <Header />
-          <SearchUser />
           <Outlet />
           <Chat />
         </ChatProvider>
