@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
+
 import '../css/chatThread.css';
 
 const ChatThread = ({ thread, onBack }) => {
