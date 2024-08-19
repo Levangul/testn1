@@ -10,6 +10,7 @@ const ChatComponent = () => {
   const messageListRef = useRef(null);
 
   const messages = receiverId ? threads[receiverId]?.messages || [] : [];
+  const receiverName = receiverId ? `${threads[receiverId].user.name} ${threads[receiverId].user.lastname}` : 'Unknown User';
 
   const handleSendMessage = () => {
     if (message.trim() && receiverId && receiverId !== user.id) {
@@ -38,7 +39,7 @@ const ChatComponent = () => {
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <h2>Chat with {receiverId}</h2>
+        <h2>{receiverName}</h2>
         <button onClick={() => { closeProfileChat(); closeThreadChat(); }}>Close</button>
       </div>
       <div className="chat-messages" ref={messageListRef}>
