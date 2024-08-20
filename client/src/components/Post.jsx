@@ -3,7 +3,7 @@ import { useMutation } from '@apollo/client';
 import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { GET_POSTS, GET_USER } from '../utils/queries';
+import { GET_POSTS } from '../utils/queries';
 import '../css/post.css';
 
 const Post = ({ post, refetchQueries }) => {
@@ -11,22 +11,21 @@ const Post = ({ post, refetchQueries }) => {
   const { user } = useAuth();
 
   const [addComment] = useMutation(ADD_COMMENT, {
-    refetchQueries: refetchQueries || [{ query: GET_POSTS }], // Refetch GET_POSTS or custom queries after adding a comment
+    refetchQueries: refetchQueries || [{ query: GET_POSTS }],
     onError(error) {
       console.error('Error adding comment:', error);
     },
   });
 
   const [removePost] = useMutation(REMOVE_POST, {
-    refetchQueries: refetchQueries || [{ query: GET_POSTS }], // Refetch GET_POSTS or custom queries after removing a post
+    refetchQueries: refetchQueries || [{ query: GET_POSTS }],
     onError(error) {
       console.error('Error removing post:', error.message);
-      console.error('Full error details:', JSON.stringify(error, null, 2));
     },
   });
 
   const [removeComment] = useMutation(REMOVE_COMMENT, {
-    refetchQueries: refetchQueries || [{ query: GET_POSTS }], // Refetch GET_POSTS or custom queries after removing a comment
+    refetchQueries: refetchQueries || [{ query: GET_POSTS }],
     onError(error) {
       console.error('Error removing comment:', error);
     },
@@ -40,7 +39,7 @@ const Post = ({ post, refetchQueries }) => {
     }
     try {
       await addComment({ variables: { postId: post.id, text: commentText } });
-      setCommentText(''); // Clear the input after submitting
+      setCommentText(''); 
     } catch (err) {
       console.error('Error adding comment:', err);
     }
@@ -55,7 +54,6 @@ const Post = ({ post, refetchQueries }) => {
       await removePost({ variables: { postId: post.id } });
     } catch (err) {
       console.error('Error removing post:', err.message);
-      console.error('Full error details:', JSON.stringify(err, null, 2));
     }
   };
 
@@ -77,49 +75,48 @@ const Post = ({ post, refetchQueries }) => {
 
   return (
     <div className="post-container">
-      <div className="post-content">
-        <div className="post-author">
-          <div className="post-author-details">
-            <img 
-              src={post.author.profilePicture || 'https://via.placeholder.com/40'} 
-              alt={`${post.author.name} ${post.author.lastname}`} 
-              className="profile-picture" 
-            />
-            <Link to={`/user/${post.author.name}/${post.author.lastname}`}>
-              {post.author.name} {post.author.lastname}
-            </Link>
-          </div>
-          {user && user.id === post.author.id && (
-            <button className="delete-button" onClick={handlePostDelete}>🗑️</button>
-          )}
+      <div className="post-header">
+        <div className="post-author-details">
+          <img 
+            src={post.author.profilePicture || 'https://via.placeholder.com/40'} 
+            alt={`${post.author.name} ${post.author.lastname}`} 
+            className="profile-picture" 
+          />
+          <Link to={`/user/${post.author.name}/${post.author.lastname}`} className="post-author-name">
+            {post.author.name} {post.author.lastname}
+          </Link>
         </div>
-        <p className="post-text">{post.text}</p>
-        <div className="comments-section">
-          <h4>Comments</h4>
-          {post.comments
-            .slice()
-            .reverse() // Reverse the comments array to display the most recent comment at the bottom
-            .map((comment) => (
-              <div key={comment.id} className="comment">
-                <div className="comment-author-details">
-                  <img 
-                    src={comment.author.profilePicture || 'https://via.placeholder.com/40'} 
-                    alt={`${comment.author.name} ${comment.author.lastname}`} 
-                    className="profile-picture" 
-                  />
-                  <span className="comment-username">
-                    <Link to={`/user/${comment.author.name}/${comment.author.lastname}`}>
-                      {comment.author.name} {comment.author.lastname}
-                    </Link>
-                  </span>
+        <div className="post-date">{/* Display the date here if needed */}</div>
+        {user && user.id === post.author.id && (
+          <button className="delete-button" onClick={handlePostDelete}>🗑️</button>
+        )}
+      </div>
+      <p className="post-text">{post.text}</p>
+      <div className="comments-section">
+        <h4>Comments</h4>
+        {post.comments
+          .slice()
+          .reverse()
+          .map((comment) => (
+            <div key={comment.id} className="comment">
+              <div className="comment-author-details">
+                <img 
+                  src={comment.author.profilePicture || 'https://via.placeholder.com/40'} 
+                  alt={`${comment.author.name} ${comment.author.lastname}`} 
+                  className="profile-picture" 
+                />
+                <div className="comment-content">
+                  <Link to={`/user/${comment.author.name}/${comment.author.lastname}`} className="comment-username">
+                    {comment.author.name} {comment.author.lastname}
+                  </Link>
+                  <span className="comment-text">{comment.text}</span>
                 </div>
-                <span className="comment-text">{comment.text}</span>
-                {user && user.id === comment.author.id && (
-                  <button className="delete-button" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
-                )}
               </div>
-            ))}
-        </div>
+              {user && user.id === comment.author.id && (
+                <button className="delete-button" onClick={() => handleCommentDelete(comment.id)}>🗑️</button>
+              )}
+            </div>
+          ))}
       </div>
       {user && (
         <form className="comment-form" onSubmit={handleCommentSubmit}>
@@ -139,4 +136,3 @@ const Post = ({ post, refetchQueries }) => {
 };
 
 export default Post;
-
