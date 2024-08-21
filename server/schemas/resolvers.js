@@ -1,4 +1,4 @@
-const { User, Post, Comment, Message } = require('../models');
+const { User, Post, Comment, Message, Reply} = require('../models');
 const { AuthenticationError, UserInputError } = require('apollo-server-express');
 const { signToken } = require('../utils/auth');
 
@@ -10,6 +10,7 @@ const resolvers = {
     posts: async () => await Post.find({}).sort({ date: -1 }),
     post: async (_, { id }) => await Post.findById(id),
     comments: async (_, { postId }) => await Comment.find({ post: postId }),
+    replies: async (_, { commentId }) => await Reply.find({ comment: commentId }),
     searchUser: async (_, { name, lastname }) => {
       const users = await User.find({
         name: { $regex: name, $options: 'i' },
@@ -96,6 +97,34 @@ const resolvers = {
       await post.save();
 
       return newComment;
+    },
+    addReply: async (_, { commentId, text }, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to add a reply');
+
+      const comment = await Comment.findById(commentId);
+      if (!comment) throw new UserInputError('Comment not found');
+
+      const newReply = await Reply.create({
+        text,
+        author: user._id,
+        comment: commentId,
+        date: new Date(),
+      });
+
+      return newReply.populate('author');
+    },
+
+    removeReply: async (_, { replyId }, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to delete a reply');
+
+      const reply = await Reply.findById(replyId);
+      if (!reply) throw new UserInputError('Reply not found');
+      if (!reply.author.equals(user._id)) {
+        throw new AuthenticationError('You do not have permission to delete this reply');
+      }
+
+      await reply.remove();
+      return reply;
     },
     removePost: async (parent, { postId }, context) => {
       if (!context.user) {
@@ -249,8 +278,13 @@ const resolvers = {
   },
   Comment: {
     author: async (comment) => await User.findById(comment.author.toString()),
-    post: async (comment) => await Post.findById(comment.post.toString())
+    post: async (comment) => await Post.findById(comment.post.toString()),
+    replies: async (comment) => await Reply.find({ comment: comment._id.toString() }).sort({ date: -1 }) 
   },
+  Reply: {
+    author: async (reply) => await User.findById(reply.author.toString()),
+  },
+  
 };
 
 module.exports = resolvers;

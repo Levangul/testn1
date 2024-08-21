@@ -1,8 +1,8 @@
-// models/Comment.js
+// models/Reply.js
 
 const mongoose = require('mongoose');
 
-const commentSchema = new mongoose.Schema(
+const replySchema = new mongoose.Schema(
   {
     text: {
       type: String,
@@ -15,9 +15,9 @@ const commentSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    post: {
+    comment: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Post',
+      ref: 'Comment',
       required: true,
     },
     date: {
@@ -31,10 +31,10 @@ const commentSchema = new mongoose.Schema(
   }
 );
 
-commentSchema.virtual('id').get(function () {
+replySchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-const Comment = mongoose.model('Comment', commentSchema);
+const Reply = mongoose.model('Reply', replySchema);
 
-module.exports = Comment;
+module.exports = Reply;
