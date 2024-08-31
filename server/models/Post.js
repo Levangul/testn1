@@ -14,6 +14,11 @@ const postSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  
+  upvotes: {
+    type: Number,
+  },
+
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment',

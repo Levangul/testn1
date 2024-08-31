@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useQuery } from "@apollo/client";
 import { GET_MESSAGES } from "../utils/queries";
 import io from 'socket.io-client';
@@ -24,9 +24,15 @@ export const ChatProvider = ({ children }) => {
   const [isThreadOpen, setIsThreadOpen] = useState(false);
   const [threads, setThreads] = useState({});
   const [unreadUsers, setUnreadUsers] = useState(new Set());
+  const messageListRef = useRef(null);
 
- 
-
+  const scrollToBottom = useCallback(() => {
+    if (messageListRef.current) {
+      setTimeout(() => {
+        messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+      }, 300); // Adjust delay as necessary
+    }
+  }, []);
 
   const updateThreads = useCallback((messages) => {
     const updatedThreads = {};
@@ -47,9 +53,6 @@ export const ChatProvider = ({ children }) => {
     setThreads(updatedThreads);
     setUnreadUsers(userSet);
   }, [user]);
-  
-  // Make sure you remove timestamp references in other parts of the code as well
-  
 
   useEffect(() => {
     if (data && data.messages && user) {
@@ -110,15 +113,28 @@ export const ChatProvider = ({ children }) => {
       senderId: user.id,
       receiverId: receiverId,
       message: message,
-      // Remove timestamp from the message payload
     });
   };
-  
 
   return (
-    <ChatContext.Provider value={{ receiverId, setReceiverId, threads, loading, error, refetch, openChatWithUser, closeProfileChat, closeThreadChat, isProfileChatOpen, isThreadOpen, sendMessageViaSocket, socket }}>
+    <ChatContext.Provider value={{
+      receiverId,
+      setReceiverId,
+      threads,
+      loading,
+      error,
+      refetch,
+      openChatWithUser,
+      closeProfileChat,
+      closeThreadChat,
+      isProfileChatOpen,
+      isThreadOpen,
+      sendMessageViaSocket,
+      scrollToBottom,  
+      messageListRef, 
+      socket
+    }}>
       {children}
     </ChatContext.Provider>
   );
 };
-

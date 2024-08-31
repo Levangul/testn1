@@ -4,12 +4,13 @@ import { GET_POSTS } from '../utils/queries';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
 import { useAuth } from '../context/AuthContext';
+import Spinner from '../components/Spinner'
 
 const Homepage = () => {
   const { loading, error, data } = useQuery(GET_POSTS);
   const { user } = useAuth();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Spinner />;
   if (error) return <p>Error: {error.message}</p>;
 
   return (

@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
+import Spinner from '../components/Spinner';
 import '../css/profile.css';
 
 const Profile = () => {
@@ -79,8 +80,9 @@ const Profile = () => {
     setProfileImage(file);
 
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       setProfileImageUrl(reader.result);
+      await handleImageUpload(); // Automatically upload the image after selection
     };
     reader.readAsDataURL(file);
   };
@@ -99,7 +101,7 @@ const Profile = () => {
         return;
       }
       const data = await response.json();
-      setProfileImageUrl(data.url);
+      setProfileImageUrl(data.url); // Update the profile image URL with the returned URL from the server
     } catch (error) {
       console.error('Error uploading image:', error);
     }
@@ -166,7 +168,7 @@ const Profile = () => {
     return <p className="text-red-500">You need to log in to view profiles.</p>;
   }
 
-  if (userLoading || postsLoading) return <p>Loading...</p>;
+  if (userLoading || postsLoading) return <Spinner />;
   if (userError || postsError) return <p>Error: {userError?.message || postsError?.message}</p>;
 
   if (!userData || !userData.user) {
@@ -183,7 +185,7 @@ const Profile = () => {
           {editable && (
             <>
               <input type="file" onChange={handleImageChange} className="mb-4" />
-              <button onClick={handleImageUpload} className="bg-blue-500 text-white px-4 py-2 rounded">Upload Image</button>
+              {/* Upload button is no longer needed */}
             </>
           )}
         </div>
@@ -284,4 +286,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

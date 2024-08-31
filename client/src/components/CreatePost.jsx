@@ -9,33 +9,11 @@ const CreatePost = () => {
   const { user } = useAuth();
 
   const [addPost] = useMutation(ADD_POST, {
-    update(cache, { data: { addPost } }) {
-      // Update GET_POSTS cache
-      const existingPosts = cache.readQuery({ query: GET_POSTS });
-      if (existingPosts) {
-        cache.writeQuery({
-          query: GET_POSTS,
-          data: {
-            posts: [addPost, ...existingPosts.posts],
-          },
-        });
-      }
-
-      // Update GET_USER cache
-      const existingUser = cache.readQuery({ query: GET_USER, variables: { name: user.name, lastname: user.lastname } });
-      if (existingUser) {
-        cache.writeQuery({
-          query: GET_USER,
-          variables: { name: user.name, lastname: user.lastname },
-          data: {
-            user: {
-              ...existingUser.user,
-              posts: [addPost, ...existingUser.user.posts],
-            },
-          },
-        });
-      }
-    },
+    refetchQueries: [
+      { query: GET_POSTS },
+      { query: GET_USER, variables: { name: user.name, lastname: user.lastname } },
+    ],
+    awaitRefetchQueries: true, // Optional: If you want to wait for refetch to complete before resolving the mutation
   });
 
   const handleSubmit = async (e) => {
