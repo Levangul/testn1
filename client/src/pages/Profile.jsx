@@ -41,7 +41,7 @@ const Profile = () => {
   useEffect(() => {
     if (userData && userData.user) {
       setCity(userData.user.city || '');
-      setBirthday(userData.user.birthday ? new Date(parseInt(userData.user.birthday)).toISOString().split('T')[0] : '');
+      setBirthday(userData.user.birthday ? new Date(parseInt(userData.user.birthday)).split('T')[0] : '');
       setAboutMe(userData.user.aboutMe || '');
       setProfileImageUrl(userData.user.profilePicture || '');
       setIsFriend(user && userData.user.friends.some(friend => friend.id === user.id));
@@ -54,7 +54,7 @@ const Profile = () => {
     try {
       const updateFields = {
         city: city || null,
-        birthday: birthday ? new Date(birthday).getTime().toString() : null,
+        birthday: birthday ? new Date(birthday) : null, // Pass a Date object directly
         aboutMe: aboutMe || null,
         profilePicture: profileImageUrl,
       };
