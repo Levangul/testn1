@@ -178,3 +178,18 @@ export const ADD_REPLY = gql`
     }
   }
 `;
+
+export const REMOVE_REPLY = gql`
+mutation removeReply($replyId: ID!) {
+  removeReply(replyId: $replyId) {
+    id
+    text
+    date
+    author {
+      id
+      name
+      lastname
+    }
+  }
+}
+`

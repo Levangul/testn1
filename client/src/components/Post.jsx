@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT, ADD_REPLY } from '../utils/mutations';
+import { ADD_COMMENT, REMOVE_POST, REMOVE_COMMENT, ADD_REPLY, REMOVE_REPLY } from '../utils/mutations';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { GET_POSTS} from '../utils/queries';
@@ -10,7 +10,7 @@ const Post = ({ post, refetchQueries }) => {
   const [commentText, setCommentText] = useState('');
   const [replyText, setReplyText] = useState('');
   const [replyingTo, setReplyingTo] = useState(null); // Track which comment is being replied to
-  const [visibleComments, setVisibleComments] = useState(5); // Number of visible comments
+  const [visibleComments, setVisibleComments] = useState(2); // Number of visible comments
   const [visibleReplies, setVisibleReplies] = useState({}); // Number of visible replies per comment
 
   const { user } = useAuth();
@@ -55,6 +55,13 @@ const Post = ({ post, refetchQueries }) => {
     },
   });
 
+  const [removeReply] = useMutation (REMOVE_REPLY, {
+    refetchQueries: refetchQueries || [{ query: GET_POSTS }],
+    onError(error) {
+      console.error('Error removing reply:', error);
+    }
+  })
+
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -80,6 +87,16 @@ const Post = ({ post, refetchQueries }) => {
     } catch (err) {
         console.error('Error adding reply:', err);
     }
+};
+
+const handleReplyDelete = async (replyId) => {
+  try {
+    await removeReply({
+      variables: { replyId }
+    });
+  } catch (err) {
+    console.error('Error removing reply:', err);
+  }
 };
 
   const handlePostDelete = async () => {
@@ -208,6 +225,7 @@ const Post = ({ post, refetchQueries }) => {
                         </Link>
                         <span className="reply-text">{reply.text}</span>
                       </div>
+                      <button className="delete-button" onClick={() => handleReplyDelete(reply.id)}>🗑️</button>
                     </div>
                   </div>
                 ))}

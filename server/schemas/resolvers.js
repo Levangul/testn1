@@ -132,18 +132,20 @@ const resolvers = {
     
     
 
-    removeReply: async (_, { replyId }, { user }) => {
-      if (!user) throw new AuthenticationError('You must be logged in to delete a reply');
+ removeReply: async (_, { replyId }, { user }) => {
+  if (!user) throw new AuthenticationError('You must be logged in to delete a reply');
 
-      const reply = await Reply.findById(replyId);
-      if (!reply) throw new UserInputError('Reply not found');
-      if (!reply.author.equals(user._id)) {
-        throw new AuthenticationError('You do not have permission to delete this reply');
-      }
+  const reply = await Reply.findById(replyId);
+  if (!reply) throw new UserInputError('Reply not found');
+  if (!reply.author.equals(user._id)) {
+    throw new AuthenticationError('You do not have permission to delete this reply');
+  }
 
-      await reply.remove();
-      return reply;
-    },
+  // Use findByIdAndDelete to remove the reply directly
+  await Reply.findByIdAndDelete(replyId);
+
+  return reply;
+},
     removePost: async (parent, { postId }, context) => {
       if (!context.user) {
         throw new AuthenticationError('You need to be logged in!');
