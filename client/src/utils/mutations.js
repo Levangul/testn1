@@ -51,26 +51,6 @@ export const ADD_POST = gql`
   }
 `;
 
-// export const SEND_MESSAGE = gql`
-//   mutation sendMessage($receiverId: ID!, $message: String!) {
-//     sendMessage(receiverId: $receiverId, message: $message) {
-//       id
-//       sender {
-//         id
-//         name
-//         lastname
-//       }
-//       receiver {
-//         id
-//         name
-//         lastname
-//       }
-//       message
-//       timestamp
-//       read
-//     }
-//   }
-// `;
 
 export const MARK_MESSAGES_AS_READ = gql`
   mutation markMessagesAsRead($receiverId: ID!) {
@@ -181,5 +161,20 @@ export const ACCEPT_FRIEND_REQUEST = gql`
 export const REJECT_FRIEND_REQUEST = gql`
   mutation rejectFriendRequest($friendId: ID!) {
     rejectFriendRequest(friendId: $friendId)
+  }
+`;
+
+export const ADD_REPLY = gql`
+  mutation addReply($commentId: ID!, $text: String!) {
+    addReply(commentId: $commentId, text: $text) {
+      id
+      text
+      author {
+        id
+        name
+        lastname
+      }
+      date
+    }
   }
 `;

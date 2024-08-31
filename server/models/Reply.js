@@ -1,4 +1,3 @@
-// models/Reply.js
 
 const mongoose = require('mongoose');
 
@@ -30,6 +29,7 @@ const replySchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
 
 replySchema.virtual('id').get(function () {
   return this._id.toHexString();

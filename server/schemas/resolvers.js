@@ -1,5 +1,6 @@
 const { User, Post, Comment, Message, Reply} = require('../models');
 const { AuthenticationError, UserInputError } = require('apollo-server-express');
+const mongoose = require('mongoose');
 const { signToken } = require('../utils/auth');
 
 const resolvers = {
@@ -100,19 +101,36 @@ const resolvers = {
     },
     addReply: async (_, { commentId, text }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to add a reply');
-
+    
+      // Ensure commentId is a valid ObjectId
+      if (!mongoose.Types.ObjectId.isValid(commentId)) {
+        throw new UserInputError('Invalid comment ID');
+      }
+    
+      // Find the comment to which the reply is being added
       const comment = await Comment.findById(commentId);
       if (!comment) throw new UserInputError('Comment not found');
-
-      const newReply = await Reply.create({
+    
+      // Create the new reply
+      const newReply = new Reply({
         text,
         author: user._id,
         comment: commentId,
-        date: new Date(),
+        date: new Date().toISOString(),
       });
-
-      return newReply.populate('author');
+    
+      // Save the new reply
+      await newReply.save();
+    
+      // Push the new reply's ID into the comment's replies array and save the comment
+      comment.replies.push(newReply._id);
+      await comment.save();
+    
+      // Return the newly created reply (without populating it)
+      return newReply;
     },
+    
+    
 
     removeReply: async (_, { replyId }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to delete a reply');

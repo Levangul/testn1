@@ -45,6 +45,72 @@
   transition: color 0.3s ease;
 }
 
+.replies-section {
+  margin-top: 10px;
+  padding-left: 20px; /* Indent replies to indicate hierarchy */
+  border-left: 2px solid #ddd; /* Optional: Visual separation between comments and replies */
+}
+
+/* Reply Layout */
+.reply {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: center; /* Center align items horizontally */
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #f8f8f8; /* Slightly lighter background than comments */
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.reply:hover {
+  background-color: #e7e7e7;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Reply Author Details */
+.reply-author-details {
+  display: flex;
+  flex-direction: column; /* Stack the profile picture and name vertically */
+  align-items: center; /* Center align both horizontally */
+  margin-bottom: 8px; /* Space between author details and text */
+}
+
+.reply-author-details .profile-picture {
+  border-radius: 50%;
+  width: 36px; /* Slightly smaller than comment profile picture */
+  height: 36px;
+  margin-bottom: 5px; /* Space between profile picture and username */
+  border: 2px solid #007bff;
+  object-fit: cover;
+}
+
+/* Reply Content */
+.reply-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center align both horizontally */
+}
+
+/* Reply Username */
+.reply-username {
+  color: #007bff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  text-align: center;
+}
+
+.reply-username:hover {
+  color: #0056b3;
+}
+
+/* Reply Text */
+.reply-text {
+  color: #444;
+  line-height: 1.5;
+  text-align: center;
+}
 .post-author-name:hover {
   color: #0056b3;
 }

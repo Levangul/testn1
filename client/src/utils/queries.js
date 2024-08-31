@@ -41,6 +41,17 @@ export const GET_USER = gql`
             name
             lastname
           }
+          replies {
+            id
+            text
+            date
+            author {
+              id
+              name
+              lastname
+            }
+            date
+          }
         }
       }
     }
@@ -109,7 +120,6 @@ export const GET_POSTS = gql`
         lastname
       }
       comments {
-        
         id
         text
         date
@@ -119,7 +129,36 @@ export const GET_POSTS = gql`
           name
           lastname
         }
+        replies {
+          id
+          text
+          date
+          author {
+            profilePicture
+            id
+            name
+            lastname
+          }
+        }
       }
     }
   }
 `;
+
+// export const GET_REPLIES = gql`
+//   query getReplies($commentId: ID!) {
+//     comment(id: $commentId) {
+//       replies {
+//         id
+//         text
+//         date
+//         author {
+//           id
+//           name
+//           lastname
+//           profilePicture
+//         }
+//       }
+//     }
+//   }
+// `;
