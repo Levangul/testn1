@@ -15,7 +15,6 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Post Header */
 .post-header {
   display: flex;
   justify-content: space-between;
@@ -45,72 +44,6 @@
   transition: color 0.3s ease;
 }
 
-.replies-section {
-  margin-top: 10px;
-  padding-left: 20px; /* Indent replies to indicate hierarchy */
-  border-left: 2px solid #ddd; /* Optional: Visual separation between comments and replies */
-}
-
-/* Reply Layout */
-.reply {
-  display: flex;
-  flex-direction: column; /* Stack items vertically */
-  align-items: center; /* Center align items horizontally */
-  padding: 10px;
-  border-radius: 8px;
-  background-color: #f8f8f8; /* Slightly lighter background than comments */
-  margin-bottom: 10px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.reply:hover {
-  background-color: #e7e7e7;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Reply Author Details */
-.reply-author-details {
-  display: flex;
-  flex-direction: column; /* Stack the profile picture and name vertically */
-  align-items: center; /* Center align both horizontally */
-  margin-bottom: 8px; /* Space between author details and text */
-}
-
-.reply-author-details .profile-picture {
-  border-radius: 50%;
-  width: 36px; /* Slightly smaller than comment profile picture */
-  height: 36px;
-  margin-bottom: 5px; /* Space between profile picture and username */
-  border: 2px solid #007bff;
-  object-fit: cover;
-}
-
-/* Reply Content */
-.reply-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center align both horizontally */
-}
-
-/* Reply Username */
-.reply-username {
-  color: #007bff;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.3s ease;
-  text-align: center;
-}
-
-.reply-username:hover {
-  color: #0056b3;
-}
-
-/* Reply Text */
-.reply-text {
-  color: #444;
-  line-height: 1.5;
-  text-align: center;
-}
 .post-author-name:hover {
   color: #0056b3;
 }
@@ -120,7 +53,7 @@
   color: #777;
 }
 
-/* Post Content */
+
 .post-text {
   color: #333;
   line-height: 1.6;
@@ -128,7 +61,7 @@
   margin-bottom: 20px;
 }
 
-/* Comments Section */
+
 .comments-section {
   margin-top: 20px;
   padding-top: 15px;
@@ -141,61 +74,66 @@
   margin-bottom: 15px;
 }
 
-/* Comment Layout */
-.comment {
+/* Comment and Reply Layout */
+.comment, .reply {
   display: flex;
-  flex-direction: column; /* Stack items vertically */
-  align-items: center; /* Center align items horizontally */
+  flex-direction: column;
   padding: 12px;
   border-radius: 8px;
   background-color: #f0f0f0;
   margin-bottom: 12px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
-.comment:hover {
+
+.comment:hover, .reply:hover {
   background-color: #e7e7e7;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
-.comment-author-details {
+.comment-author-details, .reply-author-details {
   display: flex;
-  flex-direction: column; /* Stack the profile picture and name vertically */
-  align-items: center; /* Center align both horizontally */
-  margin-bottom: 10px; /* Space between author details and text */
+  align-items: center;
+  justify-content: space-between; /* Ensure spacing between content and delete button */
+  width: 100%;
 }
 
-.comment-author-details .profile-picture {
+.comment-author-details .profile-picture, .reply-author-details .profile-picture {
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  margin-bottom: 5px; /* Space between profile picture and username */
+  margin-right: 10px;
   border: 2px solid #007bff;
   object-fit: cover;
 }
 
-.comment-content {
-  display: flex;
-  flex-direction: column;  
- 
+.comment-content, .reply-content {
+  flex-grow: 1; /* Allow content to take available space */
 }
 
-.comment-username {
+.comment-username, .reply-username {
   color: #007bff;
   font-weight: 600;
   text-decoration: none;
   transition: color 0.3s ease;
-  text-align: center; /* Center the text */
 }
 
-.comment-username:hover {
+.comment-username:hover, .reply-username:hover {
   color: #0056b3;
 }
 
-.comment-text {
+.comment-text, .reply-text {
   color: #444;
   line-height: 1.5;
-  text-align: center; /* Center the comment text */
+  margin-top: 8px; /* Spacing between username and text */
 }
+
+/* Replies Section */
+.replies-section {
+  margin-top: 10px;
+  padding-left: 20px;
+  border-left: 2px solid #ddd;
+}
+
 /* Comment Form */
 .comment-form {
   margin-top: 20px;
@@ -234,7 +172,6 @@
   transform: translateY(-1px);
 }
 
-/* Delete Button */
 .delete-button {
   background: none;
   border: none;
@@ -248,3 +185,97 @@
   color: #c0392b;
   transform: scale(1.1);
 }
+
+/* Indentation and Spacing */
+.replies-section {
+  margin-top: 10px;
+  padding-left: 30px;
+  border-left: 2px solid #ddd;
+}
+
+/* Profile Pictures for Replies */
+.reply-author-details .profile-picture {
+  width: 36px;
+  height: 36px;
+  margin-right: 10px;
+  border-radius: 50%;
+}
+
+/* Reply Grouping */
+.reply {
+  background-color: #f9f9f9;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+/* Typography */
+.reply-text {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Animation for Adding Replies */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.reply {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Icons and Buttons */
+.reply-button {
+  font-size: 0.9rem;
+  color: #007bff;
+  display: flex;
+  align-items: center;
+}
+.reply-button::before {
+  content: '↩';
+  margin-right: 5px;
+  font-size: 1rem;
+}
+
+.options-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.options-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  color: #777;
+}
+
+.options-dropdown {
+  position: absolute;
+  right: 0;
+  top: 20px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  min-width: 120px;
+}
+
+.options-dropdown button {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.options-dropdown button:hover {
+  background-color: #f8f8f8;
+  color: #c0392b;
+}
+
+/* Adjustments for comment and reply items */

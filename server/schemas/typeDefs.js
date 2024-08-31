@@ -25,6 +25,7 @@ const typeDefs = gql`
     date: Date!
     author: User!
     comments: [Comment!]!
+    upvotes: Int!
   }
 
   type Comment {

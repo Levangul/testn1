@@ -294,12 +294,12 @@ const resolvers = {
   },
   Post: {
     author: async (post) => await User.findById(post.author.toString()),
-    comments: async (post) => await Comment.find({ post: post._id.toString() }).sort({ date: -1 })
+    comments: async (post) => await Comment.find({ post: post._id.toString() })
   },
   Comment: {
     author: async (comment) => await User.findById(comment.author.toString()),
     post: async (comment) => await Post.findById(comment.post.toString()),
-    replies: async (comment) => await Reply.find({ comment: comment._id.toString() }).sort({ date: -1 }) 
+    replies: async (comment) => await Reply.find({ comment: comment._id.toString() })
   },
   Reply: {
     author: async (reply) => await User.findById(reply.author.toString()),
