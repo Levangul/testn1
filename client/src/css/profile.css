@@ -17,7 +17,6 @@
   width: 100%;
   max-width: 800px;
   padding: 20px;
-  margin: 20px;
 }
 
 /* Styling for the profile picture */
@@ -44,6 +43,19 @@
 .profile-info {
   text-align: left;
   margin-top: 20px;
+}
+
+.friend-requests-container {
+
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+ 
+  max-width: 800px;
+  padding: 20px;
+
+
 }
 
 .profile-info .info-item {
