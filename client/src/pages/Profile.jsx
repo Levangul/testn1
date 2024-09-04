@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
+import { Link } from 'react-router-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { GET_USER, GET_POSTS } from '../utils/queries';
 import { UPDATE_USER_INFO, SEND_FRIEND_REQUEST, REMOVE_FRIEND, ACCEPT_FRIEND_REQUEST, REJECT_FRIEND_REQUEST } from '../utils/mutations';
@@ -54,7 +55,7 @@ const Profile = () => {
     try {
       const updateFields = {
         city: city || null,
-        birthday: birthday ? new Date(birthday).getTime().toString() : null,
+        birthday: birthday ? new Date(birthday): null,
         aboutMe: aboutMe || null,
         profilePicture: profileImageUrl,
       };
@@ -165,7 +166,17 @@ const Profile = () => {
   };
 
   if (!user && !name && !lastname) {
-    return <p className="text-red-500">You need to log in to view profiles.</p>;
+    return (
+      <div className="login-signup-container">
+      <p>Please log in or sign up if you don't have an account</p>
+      <div className="button-group">
+        <Link to="/login" className="btn login-btn">Login</Link>
+        <Link to="/sign-up" className="btn signup-btn">Sign Up</Link>
+      </div>
+    </div>
+    )
+    ;
+    
   }
 
   if (userLoading || postsLoading) return <Spinner />;
@@ -252,10 +263,10 @@ const Profile = () => {
             <Post key={post.id} post={post} />
           ))}
         </div>
-        <div className="profile-section mb-4">
+        {/* <div className="profile-section mb-4">
           <h2 className="text-xl font-bold mt-8 mb-4">Friends</h2>
           <button onClick={handleViewFriends} className="bg-blue-500 text-white px-4 py-2 rounded">View All Friends</button>
-        </div>
+        </div> */}
       </div>
 
       {isOwnProfile && (

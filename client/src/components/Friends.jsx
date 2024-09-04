@@ -23,7 +23,15 @@ const FriendsList = () => {
   }, [user, refetch]);
 
   if (!user) {
-    return <p>You need to log in to view your friends.</p>;
+    return (
+      <div className="login-signup-container">
+        <p>Please log in or sign up if you don't have an account</p>
+        <div className="button-group">
+          <Link to="/login" className="btn login-btn">Login</Link>
+          <Link to="/sign-up" className="btn signup-btn">Sign Up</Link>
+        </div>
+      </div>
+    );
   }
 
   if (loading) return <Spinner />
