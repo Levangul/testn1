@@ -110,3 +110,39 @@ textarea {
     background-color: #f9f9f9;
   }
 }
+
+.ghost-mode {
+  --primary-color: #ffffff;
+  --background-color: #0000000f;
+  --text-color: #ffffff;
+  --card-background: #1304046b;
+  --card-hover: #444444;
+  --border-color: #666666;
+}
+
+body.ghost-mode {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.ghost-mode .header {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.ghost-mode a {
+  color: var(--text-color);
+}
+
+.ghost-mode .project-card {
+  background-color: var(--card-background);
+  border-color: var(--border-color);
+}
+
+.ghost-mode .project-card:hover {
+  background-color: var(--card-hover);
+}
+
+.ghost-mode .icon {
+  color: var(--text-color);
+}

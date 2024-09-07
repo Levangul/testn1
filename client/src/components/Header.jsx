@@ -1,21 +1,65 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen, faInbox, faUsers, faHome, faUser, faComments, faRightFromBracket, faLockOpen, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { useMutation, useQuery } from '@apollo/client';
+import { TOGGLE_GHOST_MODE } from '../utils/mutations'; // Import the mutation
+import { GET_USER } from '../utils/queries';  // Import the GET_USER query
+import { faDoorOpen, faInbox, faUsers, faHome, faUser, faComments, faRightFromBracket, faLockOpen, faCircleCheck, faGhost } from '@fortawesome/free-solid-svg-icons'; 
 import SearchUser from './SearchUser'; 
-import '../css/header.css'
+import '../css/header.css';
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { unreadCount } = useChat();
   const navigate = useNavigate();
+  const [isGhostMode, setIsGhostMode] = useState(false);
+
+  // Fetch user data including GhostMode from the server
+  const { data, loading, error } = useQuery(GET_USER, {
+    variables: { name: user?.name, lastname: user?.lastname },  // Make sure these variables are correct
+    skip: !isAuthenticated,  // Skip the query if the user is not authenticated
+  });
+
+  // Ensure the GhostMode is set based on the data
+  useEffect(() => {
+    if (data && data.user) {
+      setIsGhostMode(data.user.GhostMode);  // Set GhostMode based on the user's data from the database
+      
+      // Apply or remove the ghost-mode class on the body
+      if (data.user.GhostMode) {
+        document.body.classList.add('ghost-mode');
+      } else {
+        document.body.classList.remove('ghost-mode');
+      }
+    }
+  }, [data]);
+
+  const [toggleGhostMode] = useMutation(TOGGLE_GHOST_MODE);  // Mutation to toggle GhostMode
+
+  const handleToggleGhostMode = async () => {
+    try {
+      const { data } = await toggleGhostMode();  // Use mutation to toggle GhostMode in the backend
+      setIsGhostMode(data.toggleGhostMode.GhostMode);  // Update the local state
+      // Update body class based on the new state
+      if (data.toggleGhostMode.GhostMode) {
+        document.body.classList.add('ghost-mode');
+      } else {
+        document.body.classList.remove('ghost-mode');
+      }
+    } catch (err) {
+      console.error('Error toggling Ghost Mode', err);
+    }
+  };
 
   const handleLogout = () => {
     logout();
-    navigate('/'); // Redirect to home page after logout
+    navigate('/');
   };
+
+  if (loading) return <p>Loading...</p>; // Handle loading state
+  if (error) return <p>Error loading user data: {error.message}</p>; // Handle error state
 
   return (
     <header className="header">
@@ -83,6 +127,12 @@ const Header = () => {
                   <span className="icon"><FontAwesomeIcon icon={faRightFromBracket} /></span>
                   <span className="text-xs">Logout</span>
                 </Link>
+              </li>
+              <li>
+                <button onClick={handleToggleGhostMode} className="flex flex-col items-center hover:text-gray-300" aria-label="Ghost Mode">
+                  <span className="icon"><FontAwesomeIcon icon={faGhost} /></span>
+                  <span className="text-xs">{isGhostMode ? 'Exit Ghost Mode' : 'Ghost Mode'}</span>
+                </button>
               </li>
             </ul>
           ) : (

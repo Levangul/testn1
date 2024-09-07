@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema({
       default: []
     },
   ],
+  GhostMode: {
+    type: Boolean,
+    default: false, 
+  },
   friends: [
     {
       type: mongoose.Schema.Types.ObjectId,
