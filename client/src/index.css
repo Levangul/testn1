@@ -116,7 +116,7 @@ textarea {
 .ghost-mode {
   --primary-color: #ffffff;
   --background-color: #0000000f;
-  --text-color: #ffffff;
+  --text-color: #73737a;
   --card-background: #1304046b;
   --card-hover: #444444;
   --border-color: #666666;
@@ -130,6 +130,11 @@ body.ghost-mode {
 .ghost-mode .header {
   background-color: var(--background-color);
   color: var(--text-color);
+}
+
+.ghost-mode button {
+ 
+  background-color: #4a6f90;
 }
 
 .ghost-mode a {
