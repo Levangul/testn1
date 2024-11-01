@@ -202,8 +202,8 @@ const Profile = () => {
         </div>
         <div className="profile-section mb-4">
           <h1 className="text-2xl font-bold mb-4">{userData.user.name} {userData.user.lastname}</h1>
-          <div className="profile-info">
-            <div className="info-item">
+          <div className="profile-info-grid">
+            <div className="info-card">
               <span className="label">City:</span>
               {editable ? (
                 <input type="text" value={city} onChange={(e) => setCity(e.target.value)} className="value-edit" />
@@ -211,7 +211,7 @@ const Profile = () => {
                 <span className="value">{userData.user.city || 'N/A'}</span>
               )}
             </div>
-            <div className="info-item">
+            <div className="info-card">
               <span className="label">Birthday:</span>
               {editable ? (
                 <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} className="value-edit" />
@@ -219,7 +219,7 @@ const Profile = () => {
                 <span className="value">{userData.user.birthday ? new Date(parseInt(userData.user.birthday)).toISOString().split('T')[0] : 'N/A'}</span>
               )}
             </div>
-            <div className="info-item">
+            <div className="info-card">
               <span className="label">About Me:</span>
               {editable ? (
                 <textarea value={aboutMe} onChange={(e) => setAboutMe(e.target.value)} className="value-edit" />
@@ -231,11 +231,11 @@ const Profile = () => {
               <div className="edit-buttons mt-4">
                 {editable ? (
                   <>
-                    <button onClick={handleUpdateProfile} className="bg-blue-500 text-white px-4 py-2 rounded">Save Changes</button>
+                    <button onClick={handleUpdateProfile} className="button bg-blue-500 text-white px-4 py-2 rounded">Save Changes</button>
                     <button onClick={handleCancel} className="ml-4 bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
                   </>
                 ) : (
-                  <button onClick={() => setEditable(true)} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Edit Profile</button>
+                  <button onClick={() => setEditable(true)} className="profile-button mt-4 bg-blue-500 text-white px-4 py-2 rounded">Edit Profile</button>
                 )}
               </div>
             )}
@@ -243,9 +243,9 @@ const Profile = () => {
         </div>
         {user && (user.name !== userData.user.name || user.lastname !== userData.user.lastname) && (
           <div className="action-section mt-4">
-            <button onClick={handleSendMessage} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">Send Message</button>
+            <button onClick={handleSendMessage} className="profile-button bg-blue-500 text-white px-4 py-2 rounded mt-2">Send Message</button>
             {isFriend ? (
-              <button onClick={handleRemoveFriend} className="bg-red-500 text-white px-4 py-2 rounded mt-2 ml-2">Remove Friend</button>
+              <button onClick={handleRemoveFriend} className="profile-button bg-red-500 text-white px-4 py-2 rounded mt-2 ml-2">Remove Friend</button>
             ) : (
               requestPending ? (
                 <button disabled className="bg-gray-500 text-white px-4 py-2 rounded mt-2 ml-2">Request Pending</button>
@@ -282,8 +282,8 @@ const Profile = () => {
                   <div className="ml-4">
                     <p className="font-bold">{request.name} {request.lastname}</p>
                     <div className="flex mt-2">
-                      <button onClick={() => handleAcceptRequest(request.id)} className="bg-green-500 text-white px-2 py-1 rounded mr-2">Accept</button>
-                      <button onClick={() => handleRejectRequest(request.id)} className="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
+                      <button onClick={() => handleAcceptRequest(request.id)} className="profile-button bg-green-500 text-white px-2 py-1 rounded mr-2">Accept</button>
+                      <button onClick={() => handleRejectRequest(request.id)} className="profile-button bg-red-500 text-white px-2 py-1 rounded">Reject</button>
                     </div>
                   </div>
                 </div>

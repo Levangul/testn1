@@ -17,6 +17,7 @@ const typeDefs = gql`
     profilePicture: String
     friends: [User!]!
     friendRequests: [User!]!
+    GhostMode: Boolean
   }
 
   type Post {
@@ -111,6 +112,8 @@ const typeDefs = gql`
     rejectFriendRequest(friendId: ID!): Boolean!
 
     removeFriend(friendId: ID!): User!
+
+    toggleGhostMode: User!
   }
 `;
 

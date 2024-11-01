@@ -11,6 +11,7 @@ export const GET_USER = gql`
       birthday
       aboutMe
       profilePicture
+      GhostMode
       friends {
         id
         name

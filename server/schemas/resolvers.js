@@ -218,6 +218,18 @@ const resolvers = {
 
       return friend;
     },
+
+    toggleGhostMode: async (_, __, { user }) => {
+      if (!user) throw new AuthenticationError('You must be logged in to toggle Ghost Mode');
+
+      // Fetch the user and toggle the GhostMode field
+      const currentUser = await User.findById(user._id);
+      currentUser.GhostMode = !currentUser.GhostMode; // Toggle the Ghost Mode status
+      await currentUser.save(); // Save the updated user
+
+      return currentUser; // Return the updated user object
+    },
+
     acceptFriendRequest: async (_, { friendId }, { user }) => {
       if (!user) throw new AuthenticationError('You must be logged in to accept a friend request');
       
