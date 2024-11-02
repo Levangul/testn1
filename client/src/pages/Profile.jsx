@@ -10,6 +10,9 @@ import Post from '../components/Post';
 import CreatePost from '../components/CreatePost';
 import Spinner from '../components/Spinner';
 import '../css/profile.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLocationDot, faCalendar, faUser, faChartBar } from '@fortawesome/free-solid-svg-icons';
+
 
 const Profile = () => {
   const { name, lastname } = useParams();
@@ -189,9 +192,9 @@ const Profile = () => {
   const isOwnProfile = user && user.id === userData.user.id;
 
   return (
-    <div className="profile-container p-4 flex">
-      <div className="profile-card bg-white shadow-md rounded p-4 w-3/4">
-        <div className="profile-section mb-4 text-center">
+    <div className="profile-container p-4 flex justify-center">
+      <div className="profile-card bg-white shadow-lg rounded-lg p-6 w-3/4">
+        <div className="profile-section mb-6 text-center">
           <img src={profileImageUrl || 'https://via.placeholder.com/150'} alt="Profile" className="profile-image rounded-full mb-4" style={{ width: '150px', height: '150px' }} />
           {editable && (
             <>
@@ -200,27 +203,31 @@ const Profile = () => {
             </>
           )}
         </div>
-        <div className="profile-section mb-4">
-          <h1 className="text-2xl font-bold mb-4">{userData.user.name} {userData.user.lastname}</h1>
-          <div className="profile-info-grid">
-            <div className="info-card">
-              <span className="label">City:</span>
+        <div className="profile-section mb-6">
+          <h1 className="text-3xl font-semibold text-center text-gray-800 mb-6">{userData.user.name} {userData.user.lastname}</h1>
+          <div className="profile-info-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+            <div className="info-card bg-gray-50 shadow-sm rounded-lg p-4 flex items-center">
+            <FontAwesomeIcon icon={faLocationDot} className="mr-4 text-blue-500" /> 
+              <span className="label font-bold text-blue-500 mr-2">City</span>
               {editable ? (
                 <input type="text" value={city} onChange={(e) => setCity(e.target.value)} className="value-edit" />
               ) : (
                 <span className="value">{userData.user.city || 'N/A'}</span>
               )}
             </div>
-            <div className="info-card">
-              <span className="label">Birthday:</span>
+            <div className="info-card bg-gray-50 shadow-sm rounded-lg p-4 flex items-center">
+              <FontAwesomeIcon icon={faCalendar} className="mr-4 text-blue-500" />
+              <span className="label font-bold text-blue-500 mr-2">Birthday</span>
               {editable ? (
                 <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} className="value-edit" />
               ) : (
                 <span className="value">{userData.user.birthday ? new Date(parseInt(userData.user.birthday)).toISOString().split('T')[0] : 'N/A'}</span>
               )}
             </div>
-            <div className="info-card">
-              <span className="label">About Me:</span>
+            <div className="info-card bg-gray-50 shadow-sm rounded-lg p-4 flex items-center">
+              <FontAwesomeIcon icon={faUser} className="mr-4 text-blue-500" />
+              <span className="label font-bold text-blue-500 mr-2">About Me</span>
               {editable ? (
                 <textarea value={aboutMe} onChange={(e) => setAboutMe(e.target.value)} className="value-edit" />
               ) : (
@@ -257,7 +264,7 @@ const Profile = () => {
         )}
 
         <div className="profile-section mb-4">
-          <h2 className="text-xl font-bold mt-8 mb-4">Your Posts</h2>
+        <h2 className="text-xl font-bold mb-4">Timeline</h2>
           {user && user.name === userData.user.name && user.lastname === userData.user.lastname && <CreatePost />}
           {postsData.posts.filter(post => post.author.id === userData.user.id).map((post) => (
             <Post key={post.id} post={post} />
