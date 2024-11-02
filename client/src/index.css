@@ -141,6 +141,14 @@ body.ghost-mode {
   color: var(--text-color);
 }
 
+.ghost-mode .options-button { 
+  background-color: var(--background-color);
+}
+
+.ghost-mode .reply-button { 
+  background-color: var(--background-color);
+}
+
 .ghost-mode .project-card {
   background-color: var(--card-background);
   border-color: var(--border-color);
